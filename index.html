@@ -28,7 +28,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 .scroll{flex:1;overflow-y:auto;padding:14px 16px 24px;-webkit-overflow-scrolling:touch}
 .scroll::-webkit-scrollbar{display:none}
 
-/* Topbar — month nav only, centred */
+/* Topbar */
 .topbar{background:var(--surface);padding:calc(env(safe-area-inset-top,0px)+10px) 16px 10px;flex-shrink:0;border-bottom:1px solid rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center}
 .month-nav{display:flex;align-items:center;gap:14px}
 .mnav-btn{width:32px;height:32px;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:var(--bg);font-size:18px;cursor:pointer;color:var(--ink-m);display:flex;align-items:center;justify-content:center}
@@ -78,14 +78,26 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 .ie-box.inc .ie-val{color:var(--income-d)}
 .ie-hint{font-size:10px;color:var(--ink-s);margin-top:3px}
 
-/* Stats */
+/* Stat strip */
 .stat-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .stat-box{background:var(--white);border-radius:var(--r);padding:13px;border:1px solid rgba(0,0,0,.04)}
 .stat-lbl{font-size:10px;color:var(--ink-s);letter-spacing:1px;margin-bottom:4px;font-family:var(--ft)}
 .stat-val{font-family:var(--ft);font-size:17px;color:var(--ink)}
 .stat-hint{font-size:10px;color:var(--ink-s);margin-top:3px}
 
-/* Records */
+/* Bank group rows (總覽) */
+.bank-item{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(0,0,0,.05);cursor:pointer;transition:opacity .1s}
+.bank-item:active{opacity:.7}
+.bank-item:last-child{border-bottom:none}
+.bank-icon{width:36px;height:36px;border-radius:10px;background:var(--sage-p);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.bank-info{flex:1;margin-left:10px;min-width:0}
+.bank-name{font-size:14px;color:var(--ink);font-family:var(--ft)}
+.bank-count{font-size:11px;color:var(--ink-s);margin-top:2px}
+.bank-amount{font-family:var(--ft);font-size:15px;color:var(--blush)}
+.bank-amount.inc{color:var(--income-d)}
+.bank-chevron{font-size:14px;color:var(--ink-s);margin-left:8px}
+
+/* Records — 3-level */
 .rec-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(0,0,0,.05);cursor:pointer;transition:opacity .1s}
 .rec-item:active{opacity:.7}
 .rec-item:last-child{border-bottom:none;padding-bottom:0}
@@ -103,11 +115,33 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 .type-badge.exp{background:var(--blush-p);color:var(--blush)}
 .type-badge.inc{background:var(--income-p);color:var(--income-d)}
 
-.chips-wrap{display:flex;gap:7px;overflow-x:auto;padding:0 0 4px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
-.chips-wrap::-webkit-scrollbar{display:none}
-.chip{padding:6px 14px;border-radius:18px;font-size:12px;border:1px solid rgba(0,0,0,.1);background:var(--white);color:var(--ink-m);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:var(--ft)}
-.chip.on{background:var(--sage);color:#fff;border-color:var(--sage)}
-.chip.on-inc{background:var(--income);color:#fff;border-color:var(--income)}
+/* Category list (明細第2層) */
+.cat-group-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.05);cursor:pointer;transition:opacity .1s}
+.cat-group-item:active{opacity:.7}
+.cat-group-item:last-child{border-bottom:none}
+.cg-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.cg-info{flex:1;min-width:0}
+.cg-name{font-size:14px;color:var(--ink);font-family:var(--ft)}
+.cg-count{font-size:11px;color:var(--ink-s);margin-top:2px}
+.cg-right{text-align:right;flex-shrink:0}
+.cg-amount{font-family:var(--ft);font-size:15px;color:var(--ink)}
+
+/* Breadcrumb / back row */
+.back-row{display:flex;align-items:center;gap:6px;padding:0 0 12px;cursor:pointer;font-family:var(--ft);font-size:13px;color:var(--sage-d)}
+.back-row span{font-size:16px}
+
+/* Filter tabs */
+.filter-tabs{display:flex;gap:6px;margin-bottom:12px}
+.ftab{flex:1;padding:8px;border-radius:10px;border:1.5px solid rgba(0,0,0,.1);background:var(--white);font-family:var(--ft);font-size:13px;color:var(--ink-m);cursor:pointer;text-align:center;transition:all .15s}
+.ftab.on-all{background:var(--sage-p);border-color:var(--sage);color:var(--sage-d)}
+.ftab.on-exp{background:var(--blush-p);border-color:var(--blush);color:var(--blush)}
+.ftab.on-inc{background:var(--income-p);border-color:var(--income);color:var(--income-d)}
+
+/* Chart tabs */
+.chart-tabs{display:flex;gap:8px;margin-bottom:14px}
+.ctab{flex:1;padding:9px;border-radius:10px;border:1.5px solid rgba(0,0,0,.08);background:var(--white);font-family:var(--ft);font-size:13px;color:var(--ink-m);cursor:pointer;text-align:center}
+.ctab.on-exp{background:var(--blush-p);border-color:var(--blush);color:var(--blush)}
+.ctab.on-inc{background:var(--income-p);border-color:var(--income);color:var(--income-d)}
 
 /* Budget */
 .bud-row{padding:11px 0;border-bottom:1px solid rgba(0,0,0,.05)}
@@ -159,25 +193,6 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 .cat-pick{padding:9px 4px;text-align:center;border-radius:10px;font-size:10px;cursor:pointer;border:1.5px solid transparent;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--ft);transition:border-color .15s}
 .cat-pick .cp-emoji{font-size:19px;line-height:1}
 .cat-sec-lbl{font-size:10px;color:var(--ink-s);letter-spacing:2px;margin-bottom:7px;font-family:var(--ft)}
-
-/* Calculator input wrapper */
-.calc-wrap{position:relative}
-.calc-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:var(--sage-p);border:none;border-radius:7px;width:30px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px}
-.calc-wrap .f-input{padding-right:46px}
-
-/* Calculator panel */
-.calc-panel{background:var(--surface);border:1px solid rgba(0,0,0,.1);border-radius:var(--rs);padding:10px;margin-top:4px;display:none}
-.calc-panel.open{display:block}
-.calc-display{font-family:var(--ft);font-size:20px;color:var(--ink);text-align:right;padding:6px 10px;background:var(--white);border-radius:8px;min-height:38px;margin-bottom:8px;word-break:break-all;border:1px solid rgba(0,0,0,.06)}
-.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.ck{padding:12px 4px;border-radius:10px;border:none;font-family:var(--ft);font-size:15px;cursor:pointer;transition:all .1s;text-align:center}
-.ck:active{transform:scale(.94)}
-.ck.num{background:var(--white);color:var(--ink);border:1px solid rgba(0,0,0,.07)}
-.ck.op{background:var(--sage-p);color:var(--sage-d);border:1px solid var(--sage-l)}
-.ck.eq{background:var(--sage);color:#fff;border:none}
-.ck.clr{background:var(--blush-p);color:var(--blush);border:1px solid var(--blush-l)}
-.ck.zero{grid-column:span 2}
-
 .f-actions{display:flex;gap:10px;padding:10px 20px 4px;flex-shrink:0}
 .f-cancel{flex:1;padding:13px;background:var(--bg);border:none;border-radius:var(--rs);font-family:var(--ft);font-size:14px;color:var(--ink-m);cursor:pointer}
 .f-save{flex:2;padding:13px;background:var(--sage);border:none;border-radius:var(--rs);font-family:var(--ft);font-size:14px;color:#fff;cursor:pointer;letter-spacing:1px}
@@ -211,22 +226,42 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 </head>
 <body>
 <div class="app">
+  <!-- HOME -->
   <div class="screen active" id="sc-home">
-    <div class="topbar"><div class="month-nav"><button class="mnav-btn" onclick="chMonth(-1)">‹</button><div class="mnav-lbl" id="home-month"></div><button class="mnav-btn" onclick="chMonth(1)">›</button></div></div>
+    <div class="topbar"><div class="month-nav">
+      <button class="mnav-btn" onclick="chMonth(-1)">‹</button>
+      <div class="mnav-lbl" id="home-month"></div>
+      <button class="mnav-btn" onclick="chMonth(1)">›</button>
+    </div></div>
     <div class="scroll" id="home-scroll"><div class="empty-state">載入中⋯</div></div>
   </div>
+
+  <!-- RECORDS -->
   <div class="screen" id="sc-records">
-    <div class="topbar"><div class="month-nav"><button class="mnav-btn" onclick="chMonth(-1)">‹</button><div class="mnav-lbl" id="rec-month"></div><button class="mnav-btn" onclick="chMonth(1)">›</button></div></div>
+    <div class="topbar"><div class="month-nav">
+      <button class="mnav-btn" onclick="chMonth(-1)">‹</button>
+      <div class="mnav-lbl" id="rec-month"></div>
+      <button class="mnav-btn" onclick="chMonth(1)">›</button>
+    </div></div>
     <div class="scroll" id="rec-scroll"></div>
   </div>
+
+  <!-- CHART -->
   <div class="screen" id="sc-chart">
-    <div class="topbar"><div class="month-nav"><button class="mnav-btn" onclick="chMonth(-1)">‹</button><div class="mnav-lbl" id="chart-month"></div><button class="mnav-btn" onclick="chMonth(1)">›</button></div></div>
+    <div class="topbar"><div class="month-nav">
+      <button class="mnav-btn" onclick="chMonth(-1)">‹</button>
+      <div class="mnav-lbl" id="chart-month"></div>
+      <button class="mnav-btn" onclick="chMonth(1)">›</button>
+    </div></div>
     <div class="scroll" id="chart-scroll"></div>
   </div>
+
+  <!-- BUDGET -->
   <div class="screen" id="sc-budget">
     <div class="topbar"><div class="mnav-lbl" style="font-family:var(--ft);font-size:15px;color:var(--ink)">預算設定</div></div>
     <div class="scroll" id="budget-scroll"></div>
   </div>
+
   <div class="bottom-nav">
     <button class="nav-tab active" id="nav-home" onclick="goScreen('home')"><div class="nav-tab-icon">⌂</div><div class="nav-tab-label">總覽</div></button>
     <button class="nav-tab" id="nav-records" onclick="goScreen('records')"><div class="nav-tab-icon">☰</div><div class="nav-tab-label">明細</div></button>
@@ -247,78 +282,23 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
         <button id="btn-exp" class="type-btn ae" onclick="setType('expense')">－ 支出</button>
         <button id="btn-inc" class="type-btn" onclick="setType('income')">＋ 收入</button>
       </div>
-      <!-- 金額 + 計算機 -->
       <div class="f-row">
-      <div class="f-group">
-        <label class="f-label">金額 *</label>
-        <div class="calc-wrap">
-          <input class="f-input" id="f-amount" type="text" placeholder="0" inputmode="decimal" oninput="syncCalc('amount')">
-          <button class="calc-btn" onclick="toggleCalc('amount')">⌗</button>
+        <!-- 金額：inputmode=decimal，讓 iOS 鍵盤顯示數字+小數點，部分鍵盤支援計算 -->
+        <div class="f-group">
+          <label class="f-label">金額</label>
+          <input class="f-input" id="f-amount" type="text" inputmode="decimal" placeholder="0">
         </div>
-        <div class="calc-panel" id="calc-amount">
-          <div class="calc-display" id="calc-disp-amount">0</div>
-          <div class="calc-grid">
-            <button class="ck clr" onclick="calcAction('amount','AC')">AC</button>
-            <button class="ck op" onclick="calcAction('amount','±')">±</button>
-            <button class="ck op" onclick="calcAction('amount','%')">%</button>
-            <button class="ck op" onclick="calcAction('amount','/')">÷</button>
-            <button class="ck num" onclick="calcAction('amount','7')">7</button>
-            <button class="ck num" onclick="calcAction('amount','8')">8</button>
-            <button class="ck num" onclick="calcAction('amount','9')">9</button>
-            <button class="ck op" onclick="calcAction('amount','*')">×</button>
-            <button class="ck num" onclick="calcAction('amount','4')">4</button>
-            <button class="ck num" onclick="calcAction('amount','5')">5</button>
-            <button class="ck num" onclick="calcAction('amount','6')">6</button>
-            <button class="ck op" onclick="calcAction('amount','-')">－</button>
-            <button class="ck num" onclick="calcAction('amount','1')">1</button>
-            <button class="ck num" onclick="calcAction('amount','2')">2</button>
-            <button class="ck num" onclick="calcAction('amount','3')">3</button>
-            <button class="ck op" onclick="calcAction('amount','+')">＋</button>
-            <button class="ck num zero" onclick="calcAction('amount','0')">0</button>
-            <button class="ck num" onclick="calcAction('amount','.')">.</button>
-            <button class="ck eq" onclick="calcAction('amount','=')">＝</button>
-          </div>
+        <div class="f-group">
+          <label class="f-label">點數</label>
+          <input class="f-input" id="f-points" type="text" inputmode="decimal" placeholder="0">
         </div>
-      </div>
-      <!-- 點數 + 計算機 -->
-      <div class="f-group">
-        <label class="f-label">點數</label>
-        <div class="calc-wrap">
-          <input class="f-input" id="f-points" type="text" placeholder="0" inputmode="decimal" oninput="syncCalc('points')">
-          <button class="calc-btn" onclick="toggleCalc('points')">⌗</button>
-        </div>
-        <div class="calc-panel" id="calc-points">
-          <div class="calc-display" id="calc-disp-points">0</div>
-          <div class="calc-grid">
-            <button class="ck clr" onclick="calcAction('points','AC')">AC</button>
-            <button class="ck op" onclick="calcAction('points','±')">±</button>
-            <button class="ck op" onclick="calcAction('points','%')">%</button>
-            <button class="ck op" onclick="calcAction('points','/')">÷</button>
-            <button class="ck num" onclick="calcAction('points','7')">7</button>
-            <button class="ck num" onclick="calcAction('points','8')">8</button>
-            <button class="ck num" onclick="calcAction('points','9')">9</button>
-            <button class="ck op" onclick="calcAction('points','*')">×</button>
-            <button class="ck num" onclick="calcAction('points','4')">4</button>
-            <button class="ck num" onclick="calcAction('points','5')">5</button>
-            <button class="ck num" onclick="calcAction('points','6')">6</button>
-            <button class="ck op" onclick="calcAction('points','-')">－</button>
-            <button class="ck num" onclick="calcAction('points','1')">1</button>
-            <button class="ck num" onclick="calcAction('points','2')">2</button>
-            <button class="ck num" onclick="calcAction('points','3')">3</button>
-            <button class="ck op" onclick="calcAction('points','+')">＋</button>
-            <button class="ck num zero" onclick="calcAction('points','0')">0</button>
-            <button class="ck num" onclick="calcAction('points','.')">.</button>
-            <button class="ck eq" onclick="calcAction('points','=')">＝</button>
-          </div>
-        </div>
-      </div>
       </div>
       <div class="f-group"><label class="f-label">店家 / 說明</label><input class="f-input" id="f-store" type="text" placeholder="例：全家、捷運、薪資"></div>
-      <div class="f-group"><label class="f-label">分類</label>
+      <div class="f-group">
+        <label class="f-label">分類</label>
         <div class="cat-sec-lbl" id="cat-lbl">支出分類</div>
         <div class="cat-grid" id="cat-grid"></div>
       </div>
-      <!-- 付款方式 & 銀行 -->
       <div class="f-row">
         <div class="f-group"><label class="f-label">付款方式</label>
           <select class="f-select" id="f-payment">
@@ -335,18 +315,16 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
         <div class="f-group"><label class="f-label">銀行 / 來源</label>
           <select class="f-select" id="f-source">
             <option value="">未指定</option>
-            <option value="國泰">國泰</option>
-            <option value="中信">中信</option>
-            <option value="富邦">富邦</option>
-            <option value="永豐">永豐</option>
-            <option value="台新">台新</option>
-            <option value="台銀">台銀</option>
-            <option value="兆豐">兆豐</option>
-            <option value="玉山">玉山</option>
+            <option value="國泰世華">國泰世華</option>
+            <option value="中國信託">中國信託</option>
+            <option value="永豐銀行">永豐銀行</option>
+            <option value="台新銀行">台新銀行</option>
+            <option value="台灣銀行">台灣銀行</option>
+            <option value="兆豐銀行">兆豐銀行</option>
+            <option value="玉山銀行">玉山銀行</option>
             <option value="LINE Pay">LINE Pay</option>
             <option value="街口支付">街口支付</option>
             <option value="悠遊付">悠遊付</option>
-            <option value="手動數入">手動輸入</option>
             <option value="其他">其他</option>
           </select>
         </div>
@@ -356,7 +334,10 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
         <div class="f-group"><label class="f-label">備註</label><input class="f-input" id="f-note" type="text" placeholder="補充說明..."></div>
       </div>
     </div>
-    <div class="f-actions"><button class="f-cancel" onclick="closeAdd()">取消</button><button class="f-save" id="save-btn" onclick="saveExpense()">記帳</button></div>
+    <div class="f-actions">
+      <button class="f-cancel" onclick="closeAdd()">取消</button>
+      <button class="f-save" id="save-btn" onclick="saveExpense()">記帳</button>
+    </div>
   </div>
 </div>
 
@@ -409,16 +390,18 @@ const INC_CATS={
   '家裡贊':{c:'#b09ab5',bg:'#ede7f0',tx:'#5a3a70',e:'🎁'},
   '其他收入':{c:'#b4b2a9',bg:'#f1efeb',tx:'#5a5850',e:'⭐'},
 };
+const BANK_EMOJI={'國泰世華':'🏦','中國信託':'🏦','永豐銀行':'🏦','台新銀行':'🏦','台灣銀行':'🏦','兆豐銀行':'🏦','玉山銀行':'🏦','LINE Pay':'📱','街口支付':'📲','悠遊付':'🎫','其他':'💳'};
 
-let exps=[],budgets=JSON.parse(localStorage.getItem('mb5_bud')||'{"cats":{}}');
+let exps=[],budgets=JSON.parse(localStorage.getItem('mb6_bud')||'{"cats":{}}');
 let cy=new Date().getFullYear(),cm=new Date().getMonth()+1;
 let curScr='home',selCat='飲食',selType='expense',chartInst={};
 
-// Calculator state per field
-const calcState={
-  amount:{expr:'',hasResult:false},
-  points:{expr:'',hasResult:false}
-};
+// 明細頁狀態
+let recLevel=0; // 0=type選擇, 1=分類列表, 2=明細列表
+let recType='all',recCat=null;
+
+// 圖表頁狀態
+let chartTab='expense';
 
 const fmt=n=>Math.round(n).toLocaleString();
 const fdate=s=>s?s.slice(0,10):'';
@@ -436,6 +419,8 @@ function goScreen(s){
   document.getElementById('sc-'+s).classList.add('active');
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
   const nb=document.getElementById('nav-'+s);if(nb)nb.classList.add('active');
+  // reset sub-states
+  if(s==='records'){recLevel=0;recType='all';recCat=null;}
   render(s);
 }
 
@@ -454,7 +439,8 @@ function stats(){
   const income=exps.filter(e=>isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
   const expense=exps.filter(e=>!isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
   const bycat={};exps.filter(e=>!isInc(e)).forEach(e=>{const c=e.category||'其他';bycat[c]=(bycat[c]||0)+parseFloat(e.amount||0)});
-  return{income,expense,net:income-expense,bycat,count:exps.length};
+  const byIncCat={};exps.filter(e=>isInc(e)).forEach(e=>{const c=e.category||'其他收入';byIncCat[c]=(byIncCat[c]||0)+parseFloat(e.amount||0)});
+  return{income,expense,net:income-expense,bycat,byIncCat,count:exps.length};
 }
 
 function render(s){
@@ -464,33 +450,39 @@ function render(s){
   else if(s==='budget')renderBudget();
 }
 
-function recHTML(e){
-  const cii=catInfo(e),inc=isInc(e);
-  return`<div class="rec-item" onclick="openDetail('${e.id}')">
-    <div class="rec-icon" style="background:${cii.bg}">${cii.e}</div>
-    <div class="rec-info">
-      <div class="rec-store">${e.store&&e.store!=='未知'?e.store:'—'}</div>
-      <div class="rec-meta">
-        <span>${fdate(e.created_at)}</span>
-        <span class="cat-chip" style="background:${cii.bg};color:${cii.tx}">${e.category||'其他'}</span>
-        <span class="type-badge ${inc?'inc':'exp'}">${inc?'收入':'支出'}</span>
-        ${e.payment_method?`<span style="color:var(--ink-s)">${e.payment_method}</span>`:''}
-      </div>
-    </div>
-    <div class="rec-right">
-      <div class="rec-amount ${inc?'inc':'exp'}"><span class="rec-sign">${inc?'＋':'－'}</span>NT$${fmt(e.amount)}</div>
-      ${e.points>0?`<div style="font-size:10px;color:var(--ink-s)">點數 ${e.points}</div>`:''}
-    </div>
-  </div>`;
-}
-
+/* ─── HOME ─── */
 function renderHome(){
-  const{income,expense,net,bycat,count}=stats();
+  const{income,expense,net,bycat}=stats();
   const bud=Object.values(budgets.cats||{}).reduce((s,v)=>s+(parseFloat(v)||0),0);
   const pct=bud>0?Math.min(100,Math.round(expense/bud*100)):0;
   const avg=expense/new Date(cy,cm,0).getDate();
   const top=Object.entries(bycat).sort((a,b)=>b[1]-a[1])[0];
-  const recents=exps.slice(0,6).map(recHTML).join('')||'<div class="empty-state">這個月還沒有記錄 ✦<br>點下方 ＋ 開始記帳</div>';
+
+  // 依 source 分組顯示（支出+收入分開）
+  const bankGroups={};
+  exps.forEach(e=>{
+    const k=e.source||'其他';
+    if(!bankGroups[k])bankGroups[k]={exp:0,inc:0,count:0};
+    if(isInc(e))bankGroups[k].inc+=parseFloat(e.amount||0);
+    else bankGroups[k].exp+=parseFloat(e.amount||0);
+    bankGroups[k].count++;
+  });
+  const bankItems=Object.entries(bankGroups).sort((a,b)=>(b[1].exp+b[1].inc)-(a[1].exp+a[1].inc)).map(([name,g])=>{
+    const emoji=BANK_EMOJI[name]||'💳';
+    const net=g.inc-g.exp;
+    return`<div class="bank-item" onclick="openBankDetail('${name}')">
+      <div class="bank-icon">${emoji}</div>
+      <div class="bank-info">
+        <div class="bank-name">${name}</div>
+        <div class="bank-count">${g.count} 筆 ${g.inc>0?'・收入 NT$'+fmt(g.inc):''}${g.exp>0?'・支出 NT$'+fmt(g.exp):''}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="bank-amount ${net>=0?'inc':'exp'}">${net>=0?'＋':'－'}NT$${fmt(Math.abs(net))}</div>
+      </div>
+      <div class="bank-chevron">›</div>
+    </div>`;
+  }).join('')||'<div class="empty-state">這個月還沒有記錄 ✦</div>';
+
   document.getElementById('home-scroll').innerHTML=`
     <div class="hero">
       <div class="hero-lbl">本月結餘</div>
@@ -499,7 +491,7 @@ function renderHome(){
       <div class="hero-row">
         <div class="hero-stat"><div class="hero-stat-lbl">支出</div><div class="hero-stat-val">NT$${fmt(expense)}</div></div>
         <div class="hero-stat"><div class="hero-stat-lbl">收入</div><div class="hero-stat-val">NT$${fmt(income)}</div></div>
-        <div class="hero-stat"><div class="hero-stat-lbl">筆數</div><div class="hero-stat-val">${count} 筆</div></div>
+        <div class="hero-stat"><div class="hero-stat-lbl">筆數</div><div class="hero-stat-val">${exps.length} 筆</div></div>
       </div>
     </div>
     <div class="ie-strip">
@@ -511,50 +503,194 @@ function renderHome(){
       <div class="stat-box"><div class="stat-lbl">最大支出</div><div class="stat-val" style="font-size:14px">${top?top[0]:'—'}</div><div class="stat-hint">${top?'NT$'+fmt(top[1]):'尚無資料'}</div></div>
     </div>
     <div class="card">
-      <div class="card-row"><span class="card-title">最近記錄</span><span class="see-all" onclick="goScreen('records')">全部 →</span></div>
-      ${recents}
+      <div class="card-row"><span class="card-title">依銀行 / 來源</span><span class="see-all" onclick="goScreen('records')">查看明細 →</span></div>
+      ${bankItems}
     </div>`;
 }
 
-let filterType='all';
-function renderRecords(ft){
-  if(ft!==undefined)filterType=ft;
-  const fil=filterType==='all'?exps:exps.filter(e=>(e.type||'expense')===filterType);
-  const chips=`
-    <div class="chip${filterType==='all'?' on':''}" onclick="renderRecords('all')">全部</div>
-    <div class="chip${filterType==='expense'?' on':''}" onclick="renderRecords('expense')">支出</div>
-    <div class="chip${filterType==='income'?' on-inc':''}" style="${filterType==='income'?'background:var(--income);color:#fff;border-color:var(--income);':''}" onclick="renderRecords('income')">收入</div>`;
-  const items=fil.map(recHTML).join('')||'<div class="empty-state">沒有符合的記錄 ✦</div>';
-  document.getElementById('rec-scroll').innerHTML=`<div class="chips-wrap">${chips}</div><div class="card" style="margin-bottom:0">${items}</div>`;
+// 從總覽點進特定銀行的明細
+function openBankDetail(bankName){
+  goScreen('records');
+  recLevel=2;recType='all';recCat=null;
+  renderRecords(null,null,bankName);
 }
 
+/* ─── RECORDS (3層) ─── */
+function recHTML(e){
+  const cii=catInfo(e),inc=isInc(e);
+  return`<div class="rec-item" onclick="openDetail('${e.id}')">
+    <div class="rec-icon" style="background:${cii.bg}">${cii.e}</div>
+    <div class="rec-info">
+      <div class="rec-store">${e.store&&e.store!=='未知'?e.store:'—'}</div>
+      <div class="rec-meta">
+        <span>${fdate(e.created_at)}</span>
+        <span class="cat-chip" style="background:${cii.bg};color:${cii.tx}">${e.category||'其他'}</span>
+        ${e.source?`<span style="color:var(--ink-s)">${e.source}</span>`:''}
+      </div>
+    </div>
+    <div class="rec-right">
+      <div class="rec-amount ${inc?'inc':'exp'}"><span class="rec-sign">${inc?'＋':'－'}</span>NT$${fmt(e.amount)}</div>
+      ${(e.points||0)>0?`<div style="font-size:10px;color:var(--ink-s)">點數 ${e.points}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function renderRecords(typeOverride, catOverride, bankFilter){
+  if(typeOverride!==null&&typeOverride!==undefined){recType=typeOverride;recLevel=typeOverride==='all'?0:1;recCat=null;}
+  if(catOverride!==null&&catOverride!==undefined){recCat=catOverride;recLevel=2;}
+
+  const el=document.getElementById('rec-scroll');
+
+  if(bankFilter){
+    // 從總覽導過來的銀行篩選
+    const fil=exps.filter(e=>(e.source||'其他')===bankFilter);
+    const bankEmoji=BANK_EMOJI[bankFilter]||'💳';
+    el.innerHTML=`
+      <div class="back-row" onclick="goScreen('records')"><span>‹</span> 返回明細</div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-row">
+          <span class="card-title">${bankEmoji} ${bankFilter}</span>
+          <span style="font-size:11px;color:var(--ink-s)">${fil.length} 筆</span>
+        </div>
+        ${fil.map(recHTML).join('')||'<div class="empty-state">尚無記錄</div>'}
+      </div>`;
+    return;
+  }
+
+  // Level 0：支出 / 收入 / 全部 tab
+  if(recLevel===0){
+    const expTotal=exps.filter(e=>!isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    const incTotal=exps.filter(e=>isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    el.innerHTML=`
+      <div class="filter-tabs">
+        <div class="ftab on-all" onclick="renderRecords('all')">全部<div style="font-size:10px;margin-top:2px;opacity:.7">${exps.length} 筆</div></div>
+        <div class="ftab" onclick="renderRecords('expense')">支出<div style="font-size:10px;margin-top:2px;opacity:.7">NT$${fmt(expTotal)}</div></div>
+        <div class="ftab" onclick="renderRecords('income')">收入<div style="font-size:10px;margin-top:2px;opacity:.7">NT$${fmt(incTotal)}</div></div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        ${exps.slice(0,8).map(recHTML).join('')||'<div class="empty-state">這個月沒有記錄 ✦</div>'}
+        ${exps.length>8?`<div style="text-align:center;padding:10px 0 0;font-size:12px;color:var(--sage-d);cursor:pointer;font-family:var(--ft)" onclick="renderRecords('all')">查看全部 ${exps.length} 筆 →</div>`:''}
+      </div>`;
+    return;
+  }
+
+  // Level 1：分類列表
+  if(recLevel===1){
+    const filtered=recType==='all'?exps:exps.filter(e=>(e.type||'expense')===recType);
+    const isExpView=recType==='expense';
+    const cats=isExpView?EXP_CATS:INC_CATS;
+    const bycat={};
+    filtered.forEach(e=>{const c=e.category||'其他';bycat[c]=(bycat[c]||0)+parseFloat(e.amount||0);});
+    const catCount={};filtered.forEach(e=>{const c=e.category||'其他';catCount[c]=(catCount[c]||0)+1;});
+
+    const catRows=Object.entries(cats)
+      .filter(([name])=>bycat[name]>0||(catCount[name]||0)>0)
+      .sort((a,b)=>(bycat[b[0]]||0)-(bycat[a[0]]||0))
+      .map(([name,ci])=>{
+        const amt=bycat[name]||0;const cnt=catCount[name]||0;
+        return`<div class="cat-group-item" onclick="renderRecords(null,'${name}')">
+          <div class="cg-icon" style="background:${ci.bg}">${ci.e}</div>
+          <div class="cg-info">
+            <div class="cg-name">${name}</div>
+            <div class="cg-count">${cnt} 筆</div>
+          </div>
+          <div class="cg-right">
+            <div class="cg-amount" style="color:${isExpView?'var(--blush)':'var(--income-d)'}">${isExpView?'－':'＋'}NT$${fmt(amt)}</div>
+          </div>
+          <div class="bank-chevron">›</div>
+        </div>`;
+      }).join('')||'<div class="empty-state">尚無記錄 ✦</div>';
+
+    const typeLabel=recType==='expense'?'支出':recType==='income'?'收入':'全部';
+    el.innerHTML=`
+      <div class="back-row" onclick="renderRecords('all',null)"><span>‹</span> 返回</div>
+      <div class="filter-tabs">
+        <div class="ftab${recType==='all'?' on-all':''}" onclick="renderRecords('all')">全部</div>
+        <div class="ftab${recType==='expense'?' on-exp':''}" onclick="renderRecords('expense')">支出</div>
+        <div class="ftab${recType==='income'?' on-inc':''}" onclick="renderRecords('income')">收入</div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-row"><span class="card-title">${typeLabel} — 分類</span></div>
+        ${catRows}
+      </div>`;
+    return;
+  }
+
+  // Level 2：明細列表
+  if(recLevel===2){
+    const filtered=exps.filter(e=>{
+      const typeOk=recType==='all'||(e.type||'expense')===recType;
+      const catOk=!recCat||(e.category||'其他')===recCat;
+      return typeOk&&catOk;
+    });
+    const cii=recCat?(catInfo({type:recType==='income'?'income':'expense',category:recCat})):null;
+    el.innerHTML=`
+      <div class="back-row" onclick="recLevel=1;renderRecords()"><span>‹</span> 返回分類</div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-row">
+          <span class="card-title">${cii?cii.e+' ':''} ${recCat||'全部'}</span>
+          <span style="font-size:11px;color:var(--ink-s)">${filtered.length} 筆</span>
+        </div>
+        ${filtered.map(recHTML).join('')||'<div class="empty-state">沒有符合的記錄 ✦</div>'}
+      </div>`;
+  }
+}
+
+/* ─── CHART ─── */
 function renderChart(){
-  const{expense,bycat}=stats();
+  const{expense,income,bycat,byIncCat}=stats();
+  const isExp=chartTab==='expense';
+  const total=isExp?expense:income;
+  const byCatData=isExp?bycat:byIncCat;
+  const cats=isExp?EXP_CATS:INC_CATS;
+
   const daily={};
-  exps.filter(e=>!isInc(e)).forEach(e=>{const d=e.created_at.slice(0,10);daily[d]=(daily[d]||0)+parseFloat(e.amount||0)});
+  exps.filter(e=>isInc(e)!==isExp).forEach(e=>{const d=e.created_at.slice(0,10);daily[d]=(daily[d]||0)+parseFloat(e.amount||0)});
   const days=Object.keys(daily).sort();
-  const ckeys=Object.keys(bycat).sort((a,b)=>bycat[b]-bycat[a]);
-  const legend=ckeys.map(k=>{const c=EXP_CATS[k]||EXP_CATS['其他'],p=expense>0?Math.round(bycat[k]/expense*100):0;
-    return`<div class="cl-row"><div class="cl-dot" style="background:${c.c}"></div><div class="cl-name">${c.e} ${k}</div><div class="cl-pct">${p}%</div><div class="cl-amt">NT$${fmt(bycat[k])}</div></div>`;
+  const ckeys=Object.keys(byCatData).sort((a,b)=>byCatData[b]-byCatData[a]);
+  const legend=ckeys.map(k=>{const c=cats[k]||(isExp?EXP_CATS['其他']:INC_CATS['其他收入']),p=total>0?Math.round(byCatData[k]/total*100):0;
+    return`<div class="cl-row"><div class="cl-dot" style="background:${c.c}"></div><div class="cl-name">${c.e} ${k}</div><div class="cl-pct">${p}%</div><div class="cl-amt">NT$${fmt(byCatData[k])}</div></div>`;
   }).join('');
+
+  const lineColor=isExp?'#c4a090':'#7fa896';
+  const lineAlpha=isExp?'rgba(196,160,144,.12)':'rgba(127,168,150,.12)';
+
   document.getElementById('chart-scroll').innerHTML=`
+    <div class="chart-tabs">
+      <div class="ctab${chartTab==='expense'?' on-exp':''}" onclick="chartTab='expense';renderChart()">支出圖表</div>
+      <div class="ctab${chartTab==='income'?' on-inc':''}" onclick="chartTab='income';renderChart()">收入圖表</div>
+    </div>
     <div class="card">
-      <div class="card-row"><span class="card-title">支出分類佔比</span></div>
+      <div class="card-row"><span class="card-title">${isExp?'支出':'收入'}分類佔比</span><span style="font-size:11px;color:var(--ink-s)">NT$${fmt(total)}</span></div>
       <div style="position:relative;height:180px;width:180px;margin:0 auto"><canvas id="dc"></canvas></div>
       <div class="chart-legend">${legend||'<div class="empty-state">尚無資料</div>'}</div>
     </div>
     <div class="card">
-      <div class="card-row"><span class="card-title">每日支出趨勢</span></div>
+      <div class="card-row"><span class="card-title">每日${isExp?'支出':'收入'}趨勢</span></div>
       <div class="line-wrap"><canvas id="lc"></canvas></div>
     </div>`;
+
   setTimeout(()=>{
     if(chartInst.d)chartInst.d.destroy();
     if(chartInst.l)chartInst.l.destroy();
-    if(ckeys.length){chartInst.d=new Chart(document.getElementById('dc'),{type:'doughnut',data:{labels:ckeys,datasets:[{data:ckeys.map(k=>Math.round(bycat[k])),backgroundColor:ckeys.map(k=>(EXP_CATS[k]||EXP_CATS['其他']).c),borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}})}
-    if(days.length){chartInst.l=new Chart(document.getElementById('lc'),{type:'line',data:{labels:days.map(d=>d.slice(5)),datasets:[{data:days.map(d=>Math.round(daily[d])),borderColor:'#9aaa94',backgroundColor:'rgba(154,170,148,.12)',borderWidth:2,pointBackgroundColor:'#9aaa94',pointRadius:3,tension:.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10},color:'#a8a09a',maxRotation:0,autoSkip:true,maxTicksLimit:7}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10},color:'#a8a09a',callback:v=>'$'+v.toLocaleString()}}}}})}
+    if(ckeys.length){
+      chartInst.d=new Chart(document.getElementById('dc'),{
+        type:'doughnut',
+        data:{labels:ckeys,datasets:[{data:ckeys.map(k=>Math.round(byCatData[k])),backgroundColor:ckeys.map(k=>(cats[k]||(isExp?EXP_CATS['其他']:INC_CATS['其他收入'])).c),borderWidth:3,borderColor:'#fff'}]},
+        options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}
+      });
+    }
+    if(days.length){
+      chartInst.l=new Chart(document.getElementById('lc'),{
+        type:'line',
+        data:{labels:days.map(d=>d.slice(5)),datasets:[{data:days.map(d=>Math.round(daily[d])),borderColor:lineColor,backgroundColor:lineAlpha,borderWidth:2,pointBackgroundColor:lineColor,pointRadius:3,tension:.4,fill:true}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10},color:'#a8a09a',maxRotation:0,autoSkip:true,maxTicksLimit:7}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10},color:'#a8a09a',callback:v=>'$'+v.toLocaleString()}}}}
+      });
+    }
   },80);
 }
 
+/* ─── BUDGET ─── */
 function renderBudget(){
   const expExps=exps.filter(e=>!isInc(e));
   const bycat={};expExps.forEach(e=>{const c=e.category||'其他';bycat[c]=(bycat[c]||0)+parseFloat(e.amount||0)});
@@ -604,69 +740,11 @@ function renderBudget(){
 function setCatBud(c,v){
   if(!budgets.cats)budgets.cats={};
   budgets.cats[c]=parseFloat(v)||0;
-  localStorage.setItem('mb5_bud',JSON.stringify(budgets));
+  localStorage.setItem('mb6_bud',JSON.stringify(budgets));
   renderBudget();
 }
 
-/* ── Calculator ── */
-function toggleCalc(field){
-  const panel=document.getElementById('calc-'+field);
-  const isOpen=panel.classList.contains('open');
-  // close all panels first
-  document.querySelectorAll('.calc-panel').forEach(p=>p.classList.remove('open'));
-  if(!isOpen){
-    panel.classList.add('open');
-    // sync display with current input value
-    const val=document.getElementById('f-'+field).value||'0';
-    calcState[field].expr=val;
-    calcState[field].hasResult=false;
-    document.getElementById('calc-disp-'+field).textContent=val;
-  }
-}
-
-function syncCalc(field){
-  const val=document.getElementById('f-'+field).value||'0';
-  calcState[field].expr=val;
-  calcState[field].hasResult=false;
-  const disp=document.getElementById('calc-disp-'+field);
-  if(disp)disp.textContent=val;
-}
-
-function calcAction(field,key){
-  const st=calcState[field];
-  const disp=document.getElementById('calc-disp-'+field);
-  const inp=document.getElementById('f-'+field);
-
-  if(key==='AC'){st.expr='0';st.hasResult=false;}
-  else if(key==='='){
-    try{
-      const expr=st.expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/－/g,'-').replace(/＋/g,'+');
-      let result=Function('"use strict";return ('+expr+')')();
-      result=Math.round(result*100)/100;
-      st.expr=String(result);st.hasResult=true;
-      inp.value=result;
-    }catch{st.expr='錯誤';st.hasResult=true;}
-  }
-  else if(key==='±'){
-    try{const n=parseFloat(st.expr);st.expr=String(-n);}catch{}
-  }
-  else if(key==='%'){
-    try{const n=parseFloat(st.expr);st.expr=String(n/100);}catch{}
-  }
-  else{
-    if(st.hasResult&&/\d/.test(key)){st.expr=key;st.hasResult=false;}
-    else if(st.expr==='0'&&/\d/.test(key)){st.expr=key;}
-    else{st.expr+=key;}
-  }
-  disp.textContent=st.expr;
-  // update input if it's a number result
-  if(key!=='='&&!/[+\-*/]/.test(key)||key==='='){
-    const n=parseFloat(st.expr);
-    if(!isNaN(n)&&key==='=')inp.value=n;
-  }
-}
-
-/* ── Type toggle ── */
+/* ─── Type & Cat ─── */
 function setType(t){
   selType=t;
   document.getElementById('btn-exp').className='type-btn'+(t==='expense'?' ae':'');
@@ -675,8 +753,6 @@ function setType(t){
   selCat=t==='income'?'薪水':'飲食';
   buildCatGrid();
 }
-
-/* ── Cat grid ── */
 function buildCatGrid(){
   const cats=selType==='income'?INC_CATS:EXP_CATS;
   document.getElementById('cat-grid').innerHTML=Object.entries(cats).map(([n,ci])=>
@@ -695,7 +771,7 @@ function pickCat(n){
 }
 buildCatGrid();
 
-/* ── Add/Edit ── */
+/* ─── Add/Edit ─── */
 function openAdd(){
   document.getElementById('add-title').textContent='新增一筆';
   document.getElementById('edit-id').value='';
@@ -707,15 +783,11 @@ function openAdd(){
   document.getElementById('f-source').value='';
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
   document.getElementById('save-btn').textContent='記帳';
-  document.querySelectorAll('.calc-panel').forEach(p=>p.classList.remove('open'));
   setType('expense');
   document.getElementById('add-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('f-amount').focus(),350);
 }
-function closeAdd(){
-  document.getElementById('add-overlay').classList.remove('open');
-  document.querySelectorAll('.calc-panel').forEach(p=>p.classList.remove('open'));
-}
+function closeAdd(){document.getElementById('add-overlay').classList.remove('open')}
 
 function openEdit(id){
   const e=exps.find(x=>x.id===id);if(!e)return;
@@ -737,9 +809,17 @@ function openEdit(id){
 }
 
 async function saveExpense(){
-  const amount=parseFloat(document.getElementById('f-amount').value);
-  if(!amount||amount<=0){showToast('請輸入金額');return}
-  const points=parseInt(document.getElementById('f-points').value)||null;
+  const amountRaw=document.getElementById('f-amount').value.trim();
+  const pointsRaw=document.getElementById('f-points').value.trim();
+
+  // 修正：允許金額為 0（只要有點數 > 0 也算有效）
+  const amount=amountRaw===''?null:parseFloat(amountRaw);
+  const points=pointsRaw===''?0:(parseInt(pointsRaw)||0);
+
+  if((amount===null||isNaN(amount)||amount<0)&&points<=0){
+    showToast('請輸入金額或點數');return;
+  }
+
   const store=document.getElementById('f-store').value.trim()||'手動輸入';
   const note=document.getElementById('f-note').value.trim()||null;
   const payment_method=document.getElementById('f-payment').value||null;
@@ -749,17 +829,24 @@ async function saveExpense(){
   const eid=document.getElementById('edit-id').value;
   const btn=document.getElementById('save-btn');
   btn.disabled=true;btn.textContent='儲存中…';
+
   try{
-    const body=JSON.stringify({amount,points,store,category:selCat,type:selType,payment_method,source,created_at,note,original_text:'手動新增'});
+    const body=JSON.stringify({
+      amount: amount===null?0:amount,  // 純點數交易金額存 0
+      points,store,category:selCat,type:selType,
+      payment_method,source,created_at,note,original_text:'手動新增'
+    });
     const url=eid?`${SB}/rest/v1/expenses?id=eq.${eid}`:`${SB}/rest/v1/expenses`;
     const r=await fetch(url,{method:eid?'PATCH':'POST',headers:{...H,Prefer:'return=minimal'},body});
     if(!r.ok)throw new Error('HTTP '+r.status);
-    closeAdd();showToast(eid?'已更新 ✓':(selType==='income'?'收入記錄 ✓':'記帳成功 ✓'));await loadData();
+    closeAdd();
+    showToast(eid?'已更新 ✓':(selType==='income'?'收入記錄 ✓':'記帳成功 ✓'));
+    await loadData();
   }catch(err){showToast('儲存失敗: '+err.message)}
   finally{btn.disabled=false;btn.textContent=document.getElementById('edit-id').value?'儲存':'記帳'}
 }
 
-/* ── Detail ── */
+/* ─── Detail ─── */
 function openDetail(id){
   const e=exps.find(x=>x.id===id);if(!e)return;
   const cii=catInfo(e),inc=isInc(e);
@@ -776,7 +863,7 @@ function openDetail(id){
     <div class="detail-field"><span class="df-label">日期</span><span class="df-val">${fdate(e.created_at)}</span></div>
     ${e.payment_method?`<div class="detail-field"><span class="df-label">付款方式</span><span class="df-val">${e.payment_method}</span></div>`:''}
     ${e.source?`<div class="detail-field"><span class="df-label">銀行 / 來源</span><span class="df-val">${e.source}</span></div>`:''}
-    ${e.points?`<div class="detail-field"><span class="df-label">點數</span><span class="df-val">${e.points}</span></div>`:''}
+    ${(e.points||0)>0?`<div class="detail-field"><span class="df-label">點數</span><span class="df-val">${e.points}</span></div>`:''}
     ${e.note?`<div class="detail-field"><span class="df-label">備註</span><span class="df-val">${e.note}</span></div>`:''}`;
   document.getElementById('detail-acts').innerHTML=`
     <button class="btn-edit" onclick="openEdit('${e.id}')">✎ 編輯</button>
