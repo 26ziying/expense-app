@@ -283,14 +283,13 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
         <button id="btn-inc" class="type-btn" onclick="setType('income')">＋ 收入</button>
       </div>
       <div class="f-row">
-        <!-- 金額：inputmode=decimal，讓 iOS 鍵盤顯示數字+小數點，部分鍵盤支援計算 -->
         <div class="f-group">
           <label class="f-label">金額</label>
-          <input class="f-input" id="f-amount" type="text" inputmode="decimal" placeholder="0">
+          <input class="f-input" id="f-amount" type="number" inputmode="decimal" min="0" step="any" placeholder="0">
         </div>
         <div class="f-group">
           <label class="f-label">點數</label>
-          <input class="f-input" id="f-points" type="text" inputmode="decimal" placeholder="0">
+          <input class="f-input" id="f-points" type="number" inputmode="numeric" min="0" step="1" placeholder="0">
         </div>
       </div>
       <div class="f-group"><label class="f-label">店家 / 說明</label><input class="f-input" id="f-store" type="text" placeholder="例：全家、捷運、薪資"></div>
@@ -400,7 +399,7 @@ let curScr='home',selCat='飲食',selType='expense',chartInst={};
 
 // 明細頁狀態
 let recLevel=0; // 0=type選擇, 1=分類列表, 2=明細列表
-let recType='all',recCat=null;
+let recType='all',recCat=null,recBank=null;
 
 // 圖表頁狀態
 let chartTab='expense';
@@ -422,7 +421,7 @@ function goScreen(s){
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
   const nb=document.getElementById('nav-'+s);if(nb)nb.classList.add('active');
   // reset sub-states
-  if(s==='records'){recLevel=0;recType='all';recCat=null;}
+  if(s==='records'){recLevel=0;recType='all';recCat=null;recBank=null;}
   render(s);
 }
 
@@ -434,7 +433,9 @@ async function loadData(){
     if(!r.ok)throw new Error('HTTP '+r.status);
     const j=await r.json();exps=Array.isArray(j)?j:[];
   }catch(err){showToast('載入失敗: '+err.message);exps=[]}
+  // 載入後若有 recBank，保持在銀行明細頁
   render(curScr);
+  if(curScr==='records'&&recBank)renderRecords(null,null,recBank);
 }
 
 function stats(){
@@ -512,8 +513,9 @@ function renderHome(){
 
 // 從總覽點進特定銀行的明細
 function openBankDetail(bankName){
-  goScreen('records');
+  recBank=bankName;
   recLevel=2;recType='all';recCat=null;
+  goScreen('records');
   renderRecords(null,null,bankName);
 }
 
@@ -543,18 +545,31 @@ function renderRecords(typeOverride, catOverride, bankFilter){
 
   const el=document.getElementById('rec-scroll');
 
-  if(bankFilter){
-    // 從總覽導過來的銀行篩選
-    const fil=exps.filter(e=>(e.source||'其他')===bankFilter);
-    const bankEmoji=BANK_EMOJI[bankFilter]||'💳';
+  if(bankFilter||recBank){
+    const bk=bankFilter||recBank;
+    if(bankFilter)recBank=bankFilter; // 記住這次的銀行
+    const fil=exps.filter(e=>(e.source||'其他')===bk);
+    const bankEmoji=BANK_EMOJI[bk]||'💳';
+    const expAmt=fil.filter(e=>!isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    const incAmt=fil.filter(e=>isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
     el.innerHTML=`
-      <div class="back-row" onclick="goScreen('records')"><span>‹</span> 返回明細</div>
+      <div class="back-row" onclick="recBank=null;goScreen('home')"><span>‹</span> 返回總覽</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div style="background:var(--blush-p);border-radius:12px;padding:12px;text-align:center">
+          <div style="font-size:10px;color:var(--blush);font-family:var(--ft);letter-spacing:1px">支出</div>
+          <div style="font-family:var(--ft);font-size:16px;color:var(--blush);margin-top:4px">NT$${fmt(expAmt)}</div>
+        </div>
+        <div style="background:var(--income-p);border-radius:12px;padding:12px;text-align:center">
+          <div style="font-size:10px;color:var(--income-d);font-family:var(--ft);letter-spacing:1px">收入</div>
+          <div style="font-family:var(--ft);font-size:16px;color:var(--income-d);margin-top:4px">NT$${fmt(incAmt)}</div>
+        </div>
+      </div>
       <div class="card" style="margin-bottom:0">
         <div class="card-row">
-          <span class="card-title">${bankEmoji} ${bankFilter}</span>
+          <span class="card-title">${bankEmoji} ${bk}</span>
           <span style="font-size:11px;color:var(--ink-s)">${fil.length} 筆</span>
         </div>
-        ${fil.map(recHTML).join('')||'<div class="empty-state">尚無記錄</div>'}
+        ${fil.map(recHTML).join('')||'<div class="empty-state">本月無相關交易</div>'}
       </div>`;
     return;
   }
