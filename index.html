@@ -222,6 +222,40 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 .toast{position:fixed;bottom:calc(var(--nav-h)+10px);left:50%;transform:translateX(-50%) translateY(8px);background:rgba(62,58,54,.92);color:#fff;padding:9px 18px;border-radius:20px;font-size:12px;letter-spacing:1px;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:300;font-family:var(--ft)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .empty-state{text-align:center;padding:36px 20px;color:var(--ink-s);font-size:13px;letter-spacing:1px;line-height:2;font-family:var(--ft)}
+
+/* ── Custom Calc Keyboard ── */
+.calc-kb{
+  position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;
+  background:#d1ccc7;
+  padding:6px 3px calc(env(safe-area-inset-bottom,0px) + 6px) 3px;
+  z-index:500;display:none;
+  transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);
+  box-shadow:0 -1px 0 rgba(0,0,0,.12);
+}
+.calc-kb.open{display:block;transform:translateY(0)}
+.calc-display-bar{
+  background:var(--surface);height:44px;margin:0 3px 6px;
+  border-radius:10px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;
+}
+.calc-display-expr{font-family:var(--ft);font-size:14px;color:var(--ink-s);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calc-display-val{font-family:var(--ft);font-size:18px;color:var(--ink);margin-left:8px}
+.ck-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:0 3px}
+.ck{
+  height:52px;border-radius:9px;border:none;
+  font-family:var(--ft);font-size:20px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:filter .1s;-webkit-tap-highlight-color:transparent;
+  box-shadow:0 1px 0 rgba(0,0,0,.25);
+}
+.ck:active{filter:brightness(.88)}
+.ck.num{background:#faf8f5;color:var(--ink)}
+.ck.op{background:#b5b0aa;color:#fff;font-size:22px}
+.ck.fn{background:#c8c3be;color:var(--ink);font-size:16px}
+.ck.eq{background:var(--sage);color:#fff;font-size:22px}
+.ck.del{background:#c8c3be;color:var(--ink);font-size:18px}
+.ck.done{background:var(--sage);color:#fff;font-size:15px;letter-spacing:.5px}
+.ck.zero{grid-column:span 2;justify-content:flex-start;padding-left:28px}
 </style>
 </head>
 <body>
@@ -283,13 +317,18 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
         <button id="btn-inc" class="type-btn" onclick="setType('income')">＋ 收入</button>
       </div>
       <div class="f-row">
+        <!-- 金額/點數：使用自訂計算機鍵盤 -->
         <div class="f-group">
           <label class="f-label">金額</label>
-          <input class="f-input" id="f-amount" type="number" inputmode="decimal" min="0" step="any" placeholder="0">
+          <input class="f-input" id="f-amount" type="text" readonly placeholder="0"
+            style="cursor:pointer;caret-color:transparent"
+            onclick="openCalcKb('amount')" onfocus="openCalcKb('amount')">
         </div>
         <div class="f-group">
           <label class="f-label">點數</label>
-          <input class="f-input" id="f-points" type="number" inputmode="numeric" min="0" step="1" placeholder="0">
+          <input class="f-input" id="f-points" type="text" readonly placeholder="0"
+            style="cursor:pointer;caret-color:transparent"
+            onclick="openCalcKb('points')" onfocus="openCalcKb('points')">
         </div>
       </div>
       <div class="f-group"><label class="f-label">店家 / 說明</label><input class="f-input" id="f-store" type="text" placeholder="例：全家、捷運、薪資"></div>
@@ -365,6 +404,39 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- Custom Calculator Keyboard -->
+<div class="calc-kb" id="calc-kb">
+  <div class="calc-display-bar">
+    <div class="calc-display-expr" id="ck-expr"></div>
+    <div class="calc-display-val" id="ck-val">0</div>
+  </div>
+  <div class="ck-grid">
+    <div class="ck fn" onclick="ckFn('AC')">AC</div>
+    <div class="ck fn" onclick="ckFn('±')">+/-</div>
+    <div class="ck fn" onclick="ckFn('%')">%</div>
+    <div class="ck op" onclick="ckOp('/')">÷</div>
+    <div class="ck num" onclick="ckNum('7')">7</div>
+    <div class="ck num" onclick="ckNum('8')">8</div>
+    <div class="ck num" onclick="ckNum('9')">9</div>
+    <div class="ck op" onclick="ckOp('*')">×</div>
+    <div class="ck num" onclick="ckNum('4')">4</div>
+    <div class="ck num" onclick="ckNum('5')">5</div>
+    <div class="ck num" onclick="ckNum('6')">6</div>
+    <div class="ck op" onclick="ckOp('-')">−</div>
+    <div class="ck num" onclick="ckNum('1')">1</div>
+    <div class="ck num" onclick="ckNum('2')">2</div>
+    <div class="ck num" onclick="ckNum('3')">3</div>
+    <div class="ck op" onclick="ckOp('+')">+</div>
+    <div class="ck num zero" onclick="ckNum('0')">0</div>
+    <div class="ck num" onclick="ckNum('.')">.</div>
+    <div class="ck eq" onclick="ckEq()">=</div>
+  </div>
+  <div class="ck-grid" style="margin-top:3px">
+    <div class="ck del" onclick="ckDel()" style="grid-column:span 3">⌫</div>
+    <div class="ck done" onclick="ckDone()">完成</div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const SB='https://utlbkzikhqtgynsjyylu.supabase.co';
@@ -393,13 +465,13 @@ const INC_CATS={
 };
 const BANK_EMOJI={'國泰世華':'🏦','中國信託':'🏦','永豐銀行':'🏦','台新銀行':'🏦','台灣銀行':'🏦','兆豐銀行':'🏦','玉山銀行':'🏦','LINE Pay':'📱','街口支付':'📲','悠遊付':'🎫','其他':'💳'};
 
-let exps=[],budgets=JSON.parse(localStorage.getItem('mb6_bud')||'{"cats":{}}');
+let exps=[],allExps=[],budgets=JSON.parse(localStorage.getItem('mb6_bud')||'{"cats":{}}');
 let cy=new Date().getFullYear(),cm=new Date().getMonth()+1;
 let curScr='home',selCat='飲食',selType='expense',chartInst={};
 
 // 明細頁狀態
 let recLevel=0; // 0=type選擇, 1=分類列表, 2=明細列表
-let recType='all',recCat=null,recBank=null;
+let recType='all',recCat=null;
 
 // 圖表頁狀態
 let chartTab='expense';
@@ -421,21 +493,26 @@ function goScreen(s){
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
   const nb=document.getElementById('nav-'+s);if(nb)nb.classList.add('active');
   // reset sub-states
-  if(s==='records'){recLevel=0;recType='all';recCat=null;recBank=null;}
+  if(s==='records'){recLevel=0;recType='all';recCat=null;}
   render(s);
 }
 
 async function loadData(){
   const start=`${cy}-${String(cm).padStart(2,'0')}-01`;
   const end=cm===12?`${cy+1}-01-01`:`${cy}-${String(cm+1).padStart(2,'0')}-01`;
+  // 近12個月起點
+  const d12=new Date(cy,cm-1-11,1);
+  const start12=`${d12.getFullYear()}-${String(d12.getMonth()+1).padStart(2,'0')}-01`;
   try{
-    const r=await fetch(`${SB}/rest/v1/expenses?select=*&created_at=gte.${start}&created_at=lt.${end}&order=created_at.desc`,{headers:H});
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const j=await r.json();exps=Array.isArray(j)?j:[];
-  }catch(err){showToast('載入失敗: '+err.message);exps=[]}
-  // 載入後若有 recBank，保持在銀行明細頁
+    const [r1,r2]=await Promise.all([
+      fetch(`${SB}/rest/v1/expenses?select=*&created_at=gte.${start}&created_at=lt.${end}&order=created_at.desc`,{headers:H}),
+      fetch(`${SB}/rest/v1/expenses?select=id,amount,type,created_at&created_at=gte.${start12}&order=created_at.asc`,{headers:H})
+    ]);
+    if(!r1.ok)throw new Error('HTTP '+r1.status);
+    const j1=await r1.json();exps=Array.isArray(j1)?j1:[];
+    if(r2.ok){const j2=await r2.json();allExps=Array.isArray(j2)?j2:[];}
+  }catch(err){showToast('載入失敗: '+err.message);exps=[];}
   render(curScr);
-  if(curScr==='records'&&recBank)renderRecords(null,null,recBank);
 }
 
 function stats(){
@@ -513,9 +590,8 @@ function renderHome(){
 
 // 從總覽點進特定銀行的明細
 function openBankDetail(bankName){
-  recBank=bankName;
-  recLevel=2;recType='all';recCat=null;
   goScreen('records');
+  recLevel=2;recType='all';recCat=null;
   renderRecords(null,null,bankName);
 }
 
@@ -545,31 +621,18 @@ function renderRecords(typeOverride, catOverride, bankFilter){
 
   const el=document.getElementById('rec-scroll');
 
-  if(bankFilter||recBank){
-    const bk=bankFilter||recBank;
-    if(bankFilter)recBank=bankFilter; // 記住這次的銀行
-    const fil=exps.filter(e=>(e.source||'其他')===bk);
-    const bankEmoji=BANK_EMOJI[bk]||'💳';
-    const expAmt=fil.filter(e=>!isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
-    const incAmt=fil.filter(e=>isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+  if(bankFilter){
+    // 從總覽導過來的銀行篩選
+    const fil=exps.filter(e=>(e.source||'其他')===bankFilter);
+    const bankEmoji=BANK_EMOJI[bankFilter]||'💳';
     el.innerHTML=`
-      <div class="back-row" onclick="recBank=null;goScreen('home')"><span>‹</span> 返回總覽</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-        <div style="background:var(--blush-p);border-radius:12px;padding:12px;text-align:center">
-          <div style="font-size:10px;color:var(--blush);font-family:var(--ft);letter-spacing:1px">支出</div>
-          <div style="font-family:var(--ft);font-size:16px;color:var(--blush);margin-top:4px">NT$${fmt(expAmt)}</div>
-        </div>
-        <div style="background:var(--income-p);border-radius:12px;padding:12px;text-align:center">
-          <div style="font-size:10px;color:var(--income-d);font-family:var(--ft);letter-spacing:1px">收入</div>
-          <div style="font-family:var(--ft);font-size:16px;color:var(--income-d);margin-top:4px">NT$${fmt(incAmt)}</div>
-        </div>
-      </div>
+      <div class="back-row" onclick="goScreen('records')"><span>‹</span> 返回明細</div>
       <div class="card" style="margin-bottom:0">
         <div class="card-row">
-          <span class="card-title">${bankEmoji} ${bk}</span>
+          <span class="card-title">${bankEmoji} ${bankFilter}</span>
           <span style="font-size:11px;color:var(--ink-s)">${fil.length} 筆</span>
         </div>
-        ${fil.map(recHTML).join('')||'<div class="empty-state">本月無相關交易</div>'}
+        ${fil.map(recHTML).join('')||'<div class="empty-state">尚無記錄</div>'}
       </div>`;
     return;
   }
@@ -654,23 +717,17 @@ function renderRecords(typeOverride, catOverride, bankFilter){
 }
 
 /* ─── CHART ─── */
+/* ─── CHART ─── */
 function renderChart(){
   const{expense,income,bycat,byIncCat}=stats();
   const isExp=chartTab==='expense';
   const total=isExp?expense:income;
   const byCatData=isExp?bycat:byIncCat;
   const cats=isExp?EXP_CATS:INC_CATS;
-
-  const daily={};
-  exps.filter(e=>isInc(e)!==isExp).forEach(e=>{const d=e.created_at.slice(0,10);daily[d]=(daily[d]||0)+parseFloat(e.amount||0)});
-  const days=Object.keys(daily).sort();
   const ckeys=Object.keys(byCatData).sort((a,b)=>byCatData[b]-byCatData[a]);
   const legend=ckeys.map(k=>{const c=cats[k]||(isExp?EXP_CATS['其他']:INC_CATS['其他收入']),p=total>0?Math.round(byCatData[k]/total*100):0;
     return`<div class="cl-row"><div class="cl-dot" style="background:${c.c}"></div><div class="cl-name">${c.e} ${k}</div><div class="cl-pct">${p}%</div><div class="cl-amt">NT$${fmt(byCatData[k])}</div></div>`;
   }).join('');
-
-  const lineColor=isExp?'#c4a090':'#7fa896';
-  const lineAlpha=isExp?'rgba(196,160,144,.12)':'rgba(127,168,150,.12)';
 
   document.getElementById('chart-scroll').innerHTML=`
     <div class="chart-tabs">
@@ -683,13 +740,15 @@ function renderChart(){
       <div class="chart-legend">${legend||'<div class="empty-state">尚無資料</div>'}</div>
     </div>
     <div class="card">
-      <div class="card-row"><span class="card-title">每日${isExp?'支出':'收入'}趨勢</span></div>
-      <div class="line-wrap"><canvas id="lc"></canvas></div>
+      <div class="card-row"><span class="card-title">近12個月收支</span><span style="font-size:10px;color:var(--ink-s)">長條 = 支出・折線 = 收入</span></div>
+      <div class="line-wrap" style="height:180px"><canvas id="lc"></canvas></div>
     </div>`;
 
   setTimeout(()=>{
     if(chartInst.d)chartInst.d.destroy();
     if(chartInst.l)chartInst.l.destroy();
+
+    // 甜甜圈
     if(ckeys.length){
       chartInst.d=new Chart(document.getElementById('dc'),{
         type:'doughnut',
@@ -697,15 +756,65 @@ function renderChart(){
         options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}
       });
     }
-    if(days.length){
-      chartInst.l=new Chart(document.getElementById('lc'),{
-        type:'line',
-        data:{labels:days.map(d=>d.slice(5)),datasets:[{data:days.map(d=>Math.round(daily[d])),borderColor:lineColor,backgroundColor:lineAlpha,borderWidth:2,pointBackgroundColor:lineColor,pointRadius:3,tension:.4,fill:true}]},
-        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10},color:'#a8a09a',maxRotation:0,autoSkip:true,maxTicksLimit:7}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10},color:'#a8a09a',callback:v=>'$'+v.toLocaleString()}}}}
-      });
+
+    // 近12個月 — 從 allExps 計算（包含全年資料）
+    const months=[];
+    for(let i=11;i>=0;i--){
+      const d=new Date(cy,cm-1-i,1);
+      months.push(`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`);
     }
+    const mExp={},mInc={};
+    months.forEach(m=>{mExp[m]=0;mInc[m]=0;});
+    allExps.forEach(e=>{
+      const d=new Date(e.created_at);
+      const mk=`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`;
+      if(mExp[mk]!==undefined){
+        if(isInc(e))mInc[mk]+=parseFloat(e.amount||0);
+        else mExp[mk]+=parseFloat(e.amount||0);
+      }
+    });
+    const labels=months.map(m=>m.slice(5)); // 只顯示月份
+
+    chartInst.l=new Chart(document.getElementById('lc'),{
+      type:'bar',
+      data:{
+        labels,
+        datasets:[
+          {
+            label:'支出',
+            data:months.map(m=>Math.round(mExp[m])),
+            backgroundColor:'rgba(196,160,144,.75)',
+            borderRadius:5,
+            borderSkipped:false,
+            order:2
+          },
+          {
+            label:'收入',
+            data:months.map(m=>Math.round(mInc[m])),
+            type:'line',
+            borderColor:'#7fa896',
+            backgroundColor:'rgba(127,168,150,.08)',
+            borderWidth:2,
+            pointBackgroundColor:'#7fa896',
+            pointRadius:3,
+            tension:.4,
+            fill:true,
+            order:1
+          }
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{font:{family:'Zen Maru Gothic',size:10},color:'#a8a09a',boxWidth:10,padding:12}}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:10},color:'#a8a09a'}},
+          y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10},color:'#a8a09a',callback:v=>v>=1000?(v/1000).toFixed(1)+'k':v}}
+        }
+      }
+    });
   },80);
 }
+
 
 /* ─── BUDGET ─── */
 function renderBudget(){
@@ -905,6 +1014,105 @@ async function doDelete(id){
 
 function overlayTap(ev,id){if(ev.target.id===id)document.getElementById(id).classList.remove('open')}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+
+/* ─── Custom Calc Keyboard ─── */
+let ckField=null;   // 'amount' | 'points'
+let ckExpr='';      // 目前算式字串（顯示用）
+let ckCurrent='0';  // 正在輸入的數字
+let ckOp_=null;     // 待執行的運算子
+let ckPrev=null;    // 上一個操作數
+let ckJustEq=false; // 剛按過 =
+
+function openCalcKb(field){
+  ckField=field;
+  const val=document.getElementById('f-'+field).value;
+  ckCurrent=val||'0';
+  ckExpr='';ckOp_=null;ckPrev=null;ckJustEq=false;
+  ckRefresh();
+  document.getElementById('calc-kb').classList.add('open');
+  // 讓 sheet 底部留空間給鍵盤
+  document.querySelector('#add-overlay .sheet').style.paddingBottom=`calc(env(safe-area-inset-bottom,0px) + 280px)`;
+}
+function closeCalcKb(){
+  document.getElementById('calc-kb').classList.remove('open');
+  document.querySelector('#add-overlay .sheet').style.paddingBottom='';
+}
+function ckRefresh(){
+  document.getElementById('ck-expr').textContent=ckExpr;
+  document.getElementById('ck-val').textContent=ckCurrent;
+  if(ckField)document.getElementById('f-'+ckField).value=ckCurrent==='0'?'':ckCurrent;
+}
+
+function ckNum(n){
+  if(ckJustEq){ckCurrent='0';ckExpr='';ckJustEq=false;}
+  if(n==='.'&&ckCurrent.includes('.'))return;
+  ckCurrent=ckCurrent==='0'&&n!=='.'?n:(ckCurrent+n);
+  ckRefresh();
+}
+function ckOp(op){
+  if(ckOp_&&!ckJustEq){
+    // 連續運算
+    const prev=parseFloat(ckPrev)||0;
+    const cur=parseFloat(ckCurrent)||0;
+    const res=calcOp(prev,ckOp_,cur);
+    ckCurrent=fmtCalc(res);
+    ckExpr=ckCurrent+' '+opSym(op)+' ';
+  } else {
+    ckExpr=ckCurrent+' '+opSym(op)+' ';
+  }
+  ckPrev=ckCurrent;ckOp_=op;ckCurrent='0';ckJustEq=false;
+  ckRefresh();
+}
+function ckEq(){
+  if(!ckOp_)return;
+  const prev=parseFloat(ckPrev)||0;
+  const cur=parseFloat(ckCurrent)||0;
+  const res=calcOp(prev,ckOp_,cur);
+  ckExpr=ckPrev+' '+opSym(ckOp_)+' '+ckCurrent+' =';
+  ckCurrent=fmtCalc(res);
+  ckPrev=null;ckOp_=null;ckJustEq=true;
+  ckRefresh();
+}
+function ckFn(fn){
+  if(fn==='AC'){ckCurrent='0';ckExpr='';ckOp_=null;ckPrev=null;ckJustEq=false;}
+  else if(fn==='±'){const n=parseFloat(ckCurrent)||0;ckCurrent=fmtCalc(-n);}
+  else if(fn==='%'){const n=parseFloat(ckCurrent)||0;ckCurrent=fmtCalc(n/100);}
+  ckRefresh();
+}
+function ckDel(){
+  if(ckCurrent.length<=1){ckCurrent='0';}
+  else{ckCurrent=ckCurrent.slice(0,-1);}
+  ckRefresh();
+}
+function ckDone(){
+  if(ckOp_){ckEq();} // 還有未完成的算式先算完
+  closeCalcKb();
+}
+function calcOp(a,op,b){
+  if(op==='/')return b!==0?a/b:0;
+  if(op==='*')return a*b;
+  if(op==='-')return a-b;
+  if(op==='+')return a+b;
+  return b;
+}
+function fmtCalc(n){
+  const r=Math.round(n*1000000)/1000000;
+  return r%1===0?String(r):String(r);
+}
+function opSym(op){return op==='/'?'÷':op==='*'?'×':op==='+'?'+':'−'}
+
+// 點 sheet 背景或其他輸入框時關閉計算機
+document.getElementById('add-overlay').addEventListener('click',function(e){
+  const kb=document.getElementById('calc-kb');
+  if(kb.classList.contains('open')&&!kb.contains(e.target)
+     &&e.target.id!=='f-amount'&&e.target.id!=='f-points'){
+    closeCalcKb();
+  }
+});
+
+// closeAdd 時也關閉計算機
+const _origCloseAdd=()=>{document.getElementById('add-overlay').classList.remove('open');closeCalcKb();};
+window.closeAdd=_origCloseAdd;
 
 loadData();
 </script>
