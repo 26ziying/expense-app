@@ -1075,23 +1075,99 @@ function openAcctDetail(id){
   const a=accounts.find(x=>x.id===id);if(!a)return;
   const bal=calcAcctBalance(a);
   const src=a.linked_source||a.name;
-  const txns=exps.filter(e=>(e.source||'')===src);
+  const txns=exps.filter(e=>(e.source||'')===src).sort((x,y)=>new Date(y.created_at)-new Date(x.created_at));
   const mInc=txns.filter(e=>isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
   const mExp=txns.filter(e=>!isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
-  const txnRows=txns.slice(0,10).map(e=>{const cii=catInfo(e),inc=isInc(e);return`<div class="acct-txn"><div class="rec-icon" style="background:${cii.bg};width:34px;height:34px;border-radius:10px;flex-shrink:0">${cii.e}</div><div style="flex:1;margin-left:10px;min-width:0"><div style="font-size:13px;color:var(--ink);font-family:var(--ft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.store&&e.store!=='未知'?e.store:'—'}</div><div style="font-size:10px;color:var(--ink-s)">${fdate(e.created_at)}</div></div><div style="font-family:var(--ft);font-size:14px;color:${inc?'var(--income-d)':'var(--blush)'}">${inc?'＋':'－'}NT$${fmt(e.amount)}</div></div>`;}).join('')||'<div class="empty-state">本月無相關交易</div>';
+
+  // 本期帳單：已對帳的交易
+  const cleared=txns.filter(e=>e.is_cleared);
+  const clearedExp=cleared.filter(e=>!isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+  const clearedInc=cleared.filter(e=>isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+
+  function txnSwipeHTML(e){
+    const cii=catInfo(e),inc=isInc(e);
+    return`<div class="swipe-wrap" id="sw-${e.id}">
+      <div class="swipe-actions">
+        <div class="swipe-edit" onclick="document.getElementById('acct-detail-overlay').classList.remove('open');openEdit('${e.id}')">✎<br>編輯</div>
+        <div class="swipe-del" onclick="document.getElementById('acct-detail-overlay').classList.remove('open');askDelete('${e.id}')">🗑<br>刪除</div>
+      </div>
+      <div class="swipe-inner" id="si-${e.id}" onclick="openDetail('${e.id}')"
+        ontouchstart="swipeStart(event,'${e.id}')" ontouchmove="swipeMove(event,'${e.id}')" ontouchend="swipeEnd(event,'${e.id}')">
+        <div class="rec-item" style="border-bottom:none;padding-bottom:11px">
+          <div class="rec-icon" style="background:${cii.bg}">${cii.e}</div>
+          <div class="rec-info">
+            <div class="rec-store">${e.store&&e.store!=='未知'?e.store:'—'}</div>
+            <div class="rec-meta">
+              <span>${fdate(e.created_at)}</span>
+              <span class="cat-chip" style="background:${cii.bg};color:${cii.tx}">${e.category||'其他'}</span>
+              ${e.is_cleared?'<span class="cleared-dot"></span>':'<span class="uncleared-dot"></span>'}
+            </div>
+          </div>
+          <div class="rec-right">
+            <div class="rec-amount ${inc?'inc':'exp'}"><span class="rec-sign">${inc?'＋':'－'}</span>NT$${fmt(e.amount)}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const statementHTML=cleared.length>0?`
+    <div style="background:var(--sage-p);border-radius:14px;padding:14px 16px;margin-bottom:16px;border:1px solid var(--sage-l)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-family:var(--ft);font-size:13px;color:var(--sage-d);letter-spacing:1px">本期帳單</div>
+        <div style="font-size:10px;color:var(--ink-s)">${cleared.length} 筆已對帳</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:rgba(255,255,255,.7);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--blush);font-family:var(--ft)">帳單支出</div>
+          <div style="font-family:var(--ft);font-size:16px;color:var(--blush);margin-top:3px">NT$${fmt(clearedExp)}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.7);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--income-d);font-family:var(--ft)">帳單收入</div>
+          <div style="font-family:var(--ft);font-size:16px;color:var(--income-d);margin-top:3px">NT$${fmt(clearedInc)}</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.65);border-radius:10px;overflow:hidden">
+        ${cleared.map(e=>{
+          const cii=catInfo(e),inc=isInc(e);
+          return`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid rgba(0,0,0,.05)">
+            <div style="width:32px;height:32px;border-radius:9px;background:${cii.bg};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">${cii.e}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;color:var(--ink);font-family:var(--ft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.store&&e.store!=='未知'?e.store:'—'}</div>
+              <div style="font-size:10px;color:var(--ink-s);margin-top:1px;display:flex;align-items:center;gap:4px">${fdate(e.created_at)}<span class="cat-chip" style="background:${cii.bg};color:${cii.tx}">${e.category||'其他'}</span></div>
+            </div>
+            <div style="font-family:var(--ft);font-size:14px;color:${inc?'var(--income-d)':'var(--blush)'};flex-shrink:0">${inc?'＋':'－'}NT$${fmt(e.amount)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`
+  :`<div style="background:var(--surface);border-radius:12px;padding:12px 16px;margin-bottom:16px;border:1px solid rgba(0,0,0,.06);text-align:center">
+      <div style="font-size:12px;color:var(--ink-s);font-family:var(--ft)">本期帳單</div>
+      <div style="font-size:11px;color:var(--ink-s);margin-top:4px">尚無已對帳的交易<br>在詳情頁點「標記對帳」即可加入</div>
+    </div>`;
+
   document.getElementById('acct-detail-title').textContent=`${a.icon||'🏦'} ${a.name}`;
   document.getElementById('acct-detail-body').innerHTML=`
-    <div style="text-align:center;padding:16px 0 20px">
+    <div style="text-align:center;padding:14px 0 18px">
       <div style="font-size:11px;color:var(--ink-s);letter-spacing:1px;margin-bottom:4px">目前餘額</div>
       <div style="font-family:var(--ft);font-size:32px;color:${bal>=0?'var(--ink)':'var(--blush)'}">NT$ ${fmt(bal)}</div>
-      <div style="font-size:11px;color:var(--ink-s);margin-top:4px">${TYPE_LABEL[a.type]||'帳戶'} ${a.note?'· '+a.note:''}</div>
+      <div style="font-size:11px;color:var(--ink-s);margin-top:4px">${TYPE_LABEL[a.type]||'帳戶'}${a.note?' · '+a.note:''}</div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
-      <div style="background:var(--surface);border-radius:10px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--ink-s);font-family:var(--ft)">初始</div><div style="font-family:var(--ft);font-size:14px;color:var(--ink);margin-top:3px">NT$${fmt(parseFloat(a.initial_balance||a.balance||0))}</div></div>
-      <div style="background:var(--blush-p);border-radius:10px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--blush);font-family:var(--ft)">本月支出</div><div style="font-family:var(--ft);font-size:14px;color:var(--blush);margin-top:3px">NT$${fmt(mExp)}</div></div>
-      <div style="background:var(--income-p);border-radius:10px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--income-d);font-family:var(--ft)">本月收入</div><div style="font-family:var(--ft);font-size:14px;color:var(--income-d);margin-top:3px">NT$${fmt(mInc)}</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      <div style="background:var(--blush-p);border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:var(--blush);font-family:var(--ft)">本月支出</div>
+        <div style="font-family:var(--ft);font-size:16px;color:var(--blush);margin-top:4px">NT$${fmt(mExp)}</div>
+      </div>
+      <div style="background:var(--income-p);border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:var(--income-d);font-family:var(--ft)">本月收入</div>
+        <div style="font-family:var(--ft);font-size:16px;color:var(--income-d);margin-top:4px">NT$${fmt(mInc)}</div>
+      </div>
     </div>
-    <div style="font-size:10px;color:var(--ink-s);letter-spacing:2px;font-family:var(--ft);margin-bottom:8px">本月交易</div>${txnRows}`;
+    ${statementHTML}
+    <div style="font-size:10px;color:var(--ink-s);letter-spacing:2px;font-family:var(--ft);margin-bottom:8px">本月所有交易</div>
+    <div style="background:var(--white);border-radius:var(--r);border:1px solid rgba(0,0,0,.04);overflow:hidden">
+      ${txns.length?txns.map(txnSwipeHTML).join(''):'<div class="empty-state">本月無相關交易</div>'}
+    </div>`;
   document.getElementById('acct-detail-acts').innerHTML=`<button class="btn-edit" onclick="openAcctEdit('${a.id}')">✎ 編輯</button><button class="btn-del" onclick="askDeleteAcct('${a.id}')">刪除帳戶</button>`;
   document.getElementById('acct-detail-overlay').classList.add('open');
 }
