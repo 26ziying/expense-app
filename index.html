@@ -335,11 +335,11 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
         <!-- 金額：inputmode=decimal，讓 iOS 鍵盤顯示數字+小數點，部分鍵盤支援計算 -->
         <div class="f-group">
           <label class="f-label">金額</label>
-          <input class="f-input" id="f-amount" type="text" inputmode="decimal" placeholder="0">
+          <input class="f-input" id="f-amount" type="text" readonly placeholder="0" style="cursor:pointer;caret-color:transparent" onclick="openCalcKb('amount')">
         </div>
         <div class="f-group">
           <label class="f-label">點數</label>
-          <input class="f-input" id="f-points" type="text" inputmode="decimal" placeholder="0">
+          <input class="f-input" id="f-points" type="text" readonly placeholder="0" style="cursor:pointer;caret-color:transparent" onclick="openCalcKb('points')">
         </div>
       </div>
       <div class="f-group"><label class="f-label">店家 / 說明</label><input class="f-input" id="f-store" type="text" placeholder="例：全家、捷運、薪資"></div>
@@ -690,18 +690,6 @@ function renderHome(){
     </div>`;
   }).join('');
 
-  // 本月銀行分組
-  const bankGroups={};
-  exps.forEach(e=>{const k=e.source||'其他';if(!bankGroups[k])bankGroups[k]={exp:0,inc:0,count:0};if(isInc(e))bankGroups[k].inc+=parseFloat(e.amount||0);else bankGroups[k].exp+=parseFloat(e.amount||0);bankGroups[k].count++;});
-  const bankItems=Object.entries(bankGroups).sort((a,b)=>(b[1].exp+b[1].inc)-(a[1].exp+a[1].inc)).map(([name,g])=>{
-    const emoji=BANK_EMOJI[name]||'💳';const n=g.inc-g.exp;
-    return`<div class="bank-item" onclick="openBankDetail('${name}')">
-      <div class="bank-icon">${emoji}</div>
-      <div class="bank-info"><div class="bank-name">${name}</div><div class="bank-count">${g.count} 筆${g.inc>0?' · 收入 NT$'+fmt(g.inc):''}${g.exp>0?' · 支出 NT$'+fmt(g.exp):''}</div></div>
-      <div style="text-align:right"><div class="bank-amount ${n>=0?'inc':'exp'}">${n>=0?'＋':'－'}NT$${fmt(Math.abs(n))}</div></div>
-      <div class="bank-chevron">›</div>
-    </div>`;
-  }).join('')||'<div class="empty-state">這個月還沒有記錄 ✦<br>點下方 ＋ 開始記帳</div>';
 
   document.getElementById('home-scroll').innerHTML=`
     <div class="hero">
@@ -725,10 +713,6 @@ function renderHome(){
     <div class="stat-strip">
       <div class="stat-box"><div class="stat-lbl">支出日均</div><div class="stat-val">NT$${fmt(avg)}</div><div class="stat-hint">每日平均</div></div>
       <div class="stat-box"><div class="stat-lbl">最大支出</div><div class="stat-val" style="font-size:14px">${top?top[0]:'—'}</div><div class="stat-hint">${top?'NT$'+fmt(top[1]):'尚無資料'}</div></div>
-    </div>
-    <div class="card">
-      <div class="card-row"><span class="card-title">依銀行 / 來源</span><span class="see-all" onclick="goScreen('records')">查看明細 →</span></div>
-      ${bankItems}
     </div>`;
 }
 
@@ -905,6 +889,10 @@ function renderChart(){
     <div class="card">
       <div class="card-row"><span class="card-title">存錢趨勢</span><span style="font-size:10px;color:var(--ink-s)">收入 − 支出</span></div>
       <div class="line-wrap" style="height:140px"><canvas id="sc"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-row"><span class="card-title">資產趨勢</span><span style="font-size:10px;color:var(--ink-s)">各帳戶餘額加總</span></div>
+      <div class="line-wrap" style="height:140px"><canvas id="ac"></canvas></div>
     </div>`;
 
   setTimeout(()=>{
@@ -916,6 +904,41 @@ function renderChart(){
     chartInst.l=new Chart(document.getElementById('lc'),{type:'bar',data:{labels,datasets:[{label:'支出',data:mExp,backgroundColor:'rgba(196,160,144,.75)',borderRadius:4,order:2},{label:'收入',data:mInc,type:'line',borderColor:'#7fa896',backgroundColor:'rgba(127,168,150,.06)',borderWidth:2,pointBackgroundColor:'#7fa896',pointRadius:3,tension:.4,fill:true,order:1}]},options:{...tOpts,plugins:{legend:{position:'bottom',labels:{font:{size:10},color:'#a8a09a',boxWidth:10,padding:10}}}}});
     const savColors=mSav.map(v=>v>=0?'rgba(127,168,150,.75)':'rgba(196,160,144,.75)');
     chartInst.s=new Chart(document.getElementById('sc'),{type:'bar',data:{labels,datasets:[{label:'存款',data:mSav,backgroundColor:savColors,borderRadius:4}]},options:{...tOpts,plugins:{legend:{display:false}}}});
+
+    // 資產趨勢：每個月的帳戶累計淨資產
+    // 邏輯：各帳戶 initial_balance 總和 + 到每個月底為止的累計 (收入 - 支出)
+    const totalInitial=accounts.reduce((s,a)=>s+parseFloat(a.initial_balance||a.balance||0),0);
+    // 從所有時間的 allExps 算累計到每個月底
+    const assetByMonth=months.map(m=>{
+      // 取「到這個月底之前所有交易」的累計淨額
+      const [y,mo]=m.split('/').map(Number);
+      const cutoff=new Date(y,mo,1); // 月底 = 下個月第一天
+      const cumNet=allExps.reduce((s,e)=>{
+        const d=new Date(e.created_at);
+        if(d<cutoff){return s+(isInc(e)?parseFloat(e.amount||0):-parseFloat(e.amount||0));}
+        return s;
+      },0);
+      return Math.round(totalInitial+cumNet);
+    });
+    if(document.getElementById('ac')){
+      chartInst.a=new Chart(document.getElementById('ac'),{
+        type:'line',
+        data:{labels,datasets:[{
+          label:'總資產',data:assetByMonth,
+          borderColor:'#9aaa94',backgroundColor:'rgba(154,170,148,.1)',
+          borderWidth:2,pointBackgroundColor:'#9aaa94',pointRadius:4,
+          tension:.4,fill:true
+        }]},
+        options:{
+          ...tOpts,
+          plugins:{legend:{display:false}},
+          scales:{
+            x:{grid:{display:false},ticks:{font:{size:10},color:'#a8a09a'}},
+            y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10},color:'#a8a09a',callback:v=>v>=10000?(v/10000).toFixed(0)+'萬':v>=1000?(v/1000).toFixed(0)+'k':v}}
+          }
+        }
+      });
+    }
   },80);
 }
 
@@ -957,6 +980,9 @@ function closeAdd(){document.getElementById('add-overlay').classList.remove('ope
 function openEdit(id){
   const e=exps.find(x=>x.id===id);if(!e)return;
   closeDetail();
+  // 如果帳戶頁開著，把它壓低讓編輯頁浮上來
+  const acctOv=document.getElementById('acct-detail-overlay');
+  if(acctOv.classList.contains('open')) acctOv.style.zIndex='90';
   document.getElementById('add-title').textContent='編輯這筆';
   document.getElementById('edit-id').value=e.id;
   document.getElementById('f-amount').value=e.amount||'0';
@@ -968,7 +994,6 @@ function openEdit(id){
   document.getElementById('f-date').value=e.created_at.slice(0,10);
   document.getElementById('save-btn').textContent='儲存';
   const t=e.type||'expense';setType(t);selCat=e.category||(t==='income'?'薪水':'飲食');buildCatGrid();
-  // reset swipe
   const si=document.getElementById('si-'+id);if(si)si.style.transform='translateX(0)';
   document.getElementById('add-overlay').classList.add('open');
 }
@@ -999,6 +1024,10 @@ async function saveExpense(){
 /* ── Detail ── */
 function openDetail(id){
   const e=exps.find(x=>x.id===id);if(!e)return;
+  // 如果帳戶頁開著，先把它的 z-index 壓低，讓詳情浮上來
+  const acctOv=document.getElementById('acct-detail-overlay');
+  const fromAcct=acctOv.classList.contains('open');
+  if(fromAcct) acctOv.style.zIndex='90';
   const cii=catInfo(e),inc=isInc(e),cleared=e.is_cleared;
   document.getElementById('detail-body').innerHTML=`
     <div class="detail-header">
@@ -1023,7 +1052,11 @@ function openDetail(id){
   document.getElementById('detail-acts').innerHTML=`<button class="btn-edit" onclick="openEdit('${e.id}')">✎ 編輯</button><button class="btn-del" onclick="askDelete('${e.id}')">刪除</button>`;
   document.getElementById('detail-overlay').classList.add('open');
 }
-function closeDetail(){document.getElementById('detail-overlay').classList.remove('open')}
+function closeDetail(){
+  document.getElementById('detail-overlay').classList.remove('open');
+  // 恢復帳戶頁的 z-index
+  document.getElementById('acct-detail-overlay').style.zIndex='';
+}
 
 async function toggleCleared(id,val){
   await fetch(`${SB}/rest/v1/expenses?id=eq.${id}`,{method:'PATCH',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify({is_cleared:val})});
@@ -1226,9 +1259,6 @@ document.getElementById('add-overlay').addEventListener('click',ev=>{
   const kb=document.getElementById('calc-kb');
   if(kb.classList.contains('open')&&!kb.contains(ev.target)&&ev.target.id!=='f-amount'&&ev.target.id!=='f-points')closeCalcKb();
 });
-
-// 讓 f-amount/f-points 點擊打開計算機
-['amount','points'].forEach(f=>{document.getElementById('f-'+f).addEventListener('click',()=>openCalcKb(f));});
 
 /* ── Utilities ── */
 function overlayTap(ev,id){if(ev.target.id===id)document.getElementById(id).classList.remove('open')}
