@@ -25,14 +25,54 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 .screen{display:none;flex-direction:column;flex:1;min-height:0}
 .screen.active{display:flex}
-.scroll{flex:1;overflow-y:auto;padding:14px 16px 24px;-webkit-overflow-scrolling:touch}
+.scroll{flex:1;overflow-y:auto;padding:20px 16px 24px;-webkit-overflow-scrolling:touch;background:var(--bg)}
 .scroll::-webkit-scrollbar{display:none}
 
 /* Topbar */
-.topbar{background:var(--surface);padding:calc(env(safe-area-inset-top,0px)+10px) 16px 10px;flex-shrink:0;border-bottom:1px solid rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center}
-.month-nav{display:flex;align-items:center;gap:14px}
-.mnav-btn{width:32px;height:32px;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:var(--bg);font-size:18px;cursor:pointer;color:var(--ink-m);display:flex;align-items:center;justify-content:center}
-.mnav-lbl{font-family:var(--ft);font-size:15px;color:var(--ink);letter-spacing:1px;min-width:80px;text-align:center}
+.topbar{
+  position: relative;
+  background: var(--blush);
+  padding: calc(env(safe-area-inset-top,0px) + 14px) 2px 2px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 5;
+
+  min-height: 100px;
+
+  /* 關鍵：直接做弧形 */
+  border-bottom-left-radius: 50% 70%;
+  border-bottom-right-radius: 50% 70%;
+}
+
+.ms-item{
+  font-family:var(--ft);font-size:14px;
+  color:rgba(255,255,255,.6);
+  letter-spacing:.5px;
+  padding:6px 16px;
+  border-radius:20px;
+  cursor:pointer;
+  transition:all .2s;
+  border:1.5px solid transparent;
+  white-space:nowrap;
+}
+.ms-item.active{
+  color:#fff;
+  border:1px solid rgba(255,255,255,.35);
+  background:rgba(255,255,255,.08);
+  backdrop-filter: blur(6px);
+  font-size:15px;
+}
+.ms-item:not(.active):active{color:rgba(255,255,255,.85)}
+
+.month-slider{
+  display:flex;align-items:center;gap:6px;
+  position:relative;z-index:2;
+  padding-bottom:20px;
+}
+
 
 /* Bottom nav */
 .bottom-nav{background:var(--white);border-top:1px solid rgba(0,0,0,.07);display:flex;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px);height:var(--nav-h);z-index:10}
@@ -277,37 +317,25 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 <div class="app">
   <!-- HOME -->
   <div class="screen active" id="sc-home">
-    <div class="topbar"><div class="month-nav">
-      <button class="mnav-btn" onclick="chMonth(-1)">‹</button>
-      <div class="mnav-lbl" id="home-month"></div>
-      <button class="mnav-btn" onclick="chMonth(1)">›</button>
-    </div></div>
+    <div class="topbar"><div class="month-slider" id="slider-home"></div></div>
     <div class="scroll" id="home-scroll"><div class="empty-state">載入中⋯</div></div>
   </div>
 
   <!-- RECORDS -->
   <div class="screen" id="sc-records">
-    <div class="topbar"><div class="month-nav">
-      <button class="mnav-btn" onclick="chMonth(-1)">‹</button>
-      <div class="mnav-lbl" id="rec-month"></div>
-      <button class="mnav-btn" onclick="chMonth(1)">›</button>
-    </div></div>
+    <div class="topbar"><div class="month-slider" id="slider-rec"></div></div>
     <div class="scroll" id="rec-scroll"></div>
   </div>
 
   <!-- CHART -->
   <div class="screen" id="sc-chart">
-    <div class="topbar"><div class="month-nav">
-      <button class="mnav-btn" onclick="chMonth(-1)">‹</button>
-      <div class="mnav-lbl" id="chart-month"></div>
-      <button class="mnav-btn" onclick="chMonth(1)">›</button>
-    </div></div>
+    <div class="topbar"><div class="month-slider" id="slider-chart"></div></div>
     <div class="scroll" id="chart-scroll"></div>
   </div>
 
   <!-- BUDGET -->
   <div class="screen" id="sc-budget">
-    <div class="topbar"><div class="mnav-lbl" style="font-family:var(--ft);font-size:15px;color:var(--ink)">預算設定</div></div>
+    <div class="topbar"><div style="font-family:var(--ft);font-size:16px;color:#fff;letter-spacing:2px;position:relative;z-index:2">預算設定</div></div>
     <div class="scroll" id="budget-scroll"></div>
   </div>
 
@@ -561,9 +589,25 @@ const isInc=e=>(e.type||'expense')==='income';
 const catInfo=e=>{const t=e.type||'expense',c=e.category||'其他';return(t==='income'?INC_CATS[c]:EXP_CATS[c])||(t==='income'?INC_CATS['其他收入']:EXP_CATS['其他'])};
 
 /* ── Month ── */
-function mlbl(){return`${cy}/${String(cm).padStart(2,'0')}`}
-function updMonths(){['home','rec','chart'].forEach(k=>{const el=document.getElementById(k+'-month');if(el)el.textContent=mlbl()})}
-function chMonth(d){cm+=d;if(cm>12){cm=1;cy++}if(cm<1){cm=12;cy--}updMonths();loadData()}
+function mlbl(y,m){return`${y}/${String(m).padStart(2,'0')}`}
+function prevMonth(y,m){return m===1?{y:y-1,m:12}:{y,m:m-1}}
+function nextMonth(y,m){return m===12?{y:y+1,m:1}:{y,m:m+1}}
+
+function updMonths(){
+  const prev=prevMonth(cy,cm),next=nextMonth(cy,cm);
+  const sliderHTML=`
+    <div class="ms-item" onclick="chMonth(-1)">${mlbl(prev.y,prev.m)}</div>
+    <div class="ms-item active">${mlbl(cy,cm)}</div>
+    <div class="ms-item" onclick="chMonth(1)">${mlbl(next.y,next.m)}</div>`;
+  ['slider-home','slider-rec','slider-chart'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.innerHTML=sliderHTML;
+  });
+}
+function chMonth(d){
+  if(d===-1){const p=prevMonth(cy,cm);cy=p.y;cm=p.m;}
+  else{const n=nextMonth(cy,cm);cy=n.y;cm=n.m;}
+  updMonths();loadData();
+}
 updMonths();
 
 /* ── Navigation ── */
