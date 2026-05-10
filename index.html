@@ -21,7 +21,7 @@
   --fb:'Noto Sans TC',sans-serif;
 }
 html,body{height:100%;background:var(--bg)}
-body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max-width:480px;margin:0 auto;position:relative;overflow:hidden}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max-width:480px;margin:0 auto;position:relative;overflow:hidden;font-weight:bold}
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 .screen{display:none;flex-direction:column;flex:1;min-height:0}
 .screen.active{display:flex}
@@ -31,7 +31,6 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 /* Topbar */
 .topbar{
   position: relative;
-  background: var(--blush);
   padding: calc(env(safe-area-inset-top,0px) + 14px) 2px 2px;
   flex-shrink: 0;
   display: flex;
@@ -40,16 +39,16 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
   overflow: hidden;
   z-index: 5;
 
-  min-height: 100px;
+  min-height: 70px;
 
   /* 關鍵：直接做弧形 */
-  border-bottom-left-radius: 50% 70%;
-  border-bottom-right-radius: 50% 70%;
+  border-bottom-left-radius: 50% 120%;
+  border-bottom-right-radius: 50% 120%;
 }
 
 .ms-item{
   font-family:var(--ft);font-size:14px;
-  color:rgba(255,255,255,.6);
+  color:var(--ink);
   letter-spacing:.5px;
   padding:6px 16px;
   border-radius:20px;
@@ -59,13 +58,13 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
   white-space:nowrap;
 }
 .ms-item.active{
-  color:#fff;
-  border:1px solid rgba(255,255,255,.35);
-  background:rgba(255,255,255,.08);
+  color:var(--ink);
+  border:1px solid var(--ink);
+  background:rgba(62,58,54,0.1);
   backdrop-filter: blur(6px);
   font-size:15px;
 }
-.ms-item:not(.active):active{color:rgba(255,255,255,.85)}
+.ms-item:not(.active):active{color:var(--ink)}
 
 .month-slider{
   display:flex;align-items:center;gap:6px;
@@ -580,6 +579,7 @@ let cy=new Date().getFullYear(),cm=new Date().getMonth()+1;
 let curScr='home',selCat='飲食',selType='expense',chartInst={};
 let recLevel=0,recType='all',recCat=null,recBank=null;
 let chartTab='expense';
+let chartMode='income-expense';
 let selAcctColor=ACCT_COLORS[0];
 
 /* ── Helpers ── */
@@ -750,13 +750,13 @@ function renderHome(){
       <div class="ie-box exp"><div class="ie-lbl">本月支出</div><div class="ie-val">NT$${fmt(expense)}</div><div class="ie-hint">預算 ${pct}%</div></div>
       <div class="ie-box inc"><div class="ie-lbl">本月收入</div><div class="ie-val">NT$${fmt(income)}</div><div class="ie-hint">結餘 NT$${fmt(net)}</div></div>
     </div>
-    <div class="card">
-      <div class="card-row"><span class="card-title">帳戶資產</span><span class="see-all" onclick="openAcctEdit(null)">＋ 新增</span></div>
-      <div class="acct-scroll-wrap">${acctCards}<div class="acct-add" onclick="openAcctEdit(null)"><div class="acct-add-icon">＋</div><div class="acct-add-lbl">新增帳戶</div></div></div>
-    </div>
     <div class="stat-strip">
       <div class="stat-box"><div class="stat-lbl">支出日均</div><div class="stat-val">NT$${fmt(avg)}</div><div class="stat-hint">每日平均</div></div>
       <div class="stat-box"><div class="stat-lbl">最大支出</div><div class="stat-val" style="font-size:14px">${top?top[0]:'—'}</div><div class="stat-hint">${top?'NT$'+fmt(top[1]):'尚無資料'}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-row"><span class="card-title">帳戶資產</span><span class="see-all" onclick="openAcctEdit(null)">＋ 新增</span></div>
+      <div class="acct-scroll-wrap">${acctCards}<div class="acct-add" onclick="openAcctEdit(null)"><div class="acct-add-icon">＋</div><div class="acct-add-lbl">新增帳戶</div></div></div>
     </div>`;
 }
 
@@ -916,7 +916,14 @@ function renderChart(){
   const mSav=months.map((_,i)=>mInc[i]-mExp[i]);
   const labels=months.map(m=>m.slice(5));
 
-  document.getElementById('chart-scroll').innerHTML=`
+  let html=`
+    <div class="chart-tabs">
+      <div class="ctab${chartMode==='income-expense'?' on-exp':''}" onclick="chartMode='income-expense';renderChart()">收支</div>
+      <div class="ctab${chartMode==='assets'?' on-inc':''}" onclick="chartMode='assets';renderChart()">資產</div>
+    </div>`;
+
+  if(chartMode==='income-expense'){
+    html+=`
     <div class="chart-tabs">
       <div class="ctab${chartTab==='expense'?' on-exp':''}" onclick="chartTab='expense';renderChart()">支出圖表</div>
       <div class="ctab${chartTab==='income'?' on-inc':''}" onclick="chartTab='income';renderChart()">收入圖表</div>
@@ -929,7 +936,9 @@ function renderChart(){
     <div class="card">
       <div class="card-row"><span class="card-title">近12個月收支</span><span style="font-size:10px;color:var(--ink-s)">橘=支出 · 綠=收入</span></div>
       <div class="line-wrap" style="height:180px"><canvas id="lc"></canvas></div>
-    </div>
+    </div>`;
+  }else{
+    html+=`
     <div class="card">
       <div class="card-row"><span class="card-title">存錢趨勢</span><span style="font-size:10px;color:var(--ink-s)">收入 − 支出</span></div>
       <div class="line-wrap" style="height:140px"><canvas id="sc"></canvas></div>
@@ -938,6 +947,9 @@ function renderChart(){
       <div class="card-row"><span class="card-title">資產趨勢</span><span style="font-size:10px;color:var(--ink-s)">各帳戶餘額加總</span></div>
       <div class="line-wrap" style="height:140px"><canvas id="ac"></canvas></div>
     </div>`;
+  }
+
+  document.getElementById('chart-scroll').innerHTML=html;
 
   setTimeout(()=>{
     if(chartInst.d)chartInst.d.destroy();
