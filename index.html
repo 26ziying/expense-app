@@ -22,7 +22,7 @@
   --fb:'Noto Sans TC',sans-serif;
 }
 html,body{height:100%;background:var(--bg)}
-body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max-width:480px;margin:0 auto;position:relative;overflow:hidden}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max-width:480px;margin:0 auto;position:relative;overflow:hidden;font-weight:bold}
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 .screen{display:none;flex-direction:column;flex:1;min-height:0}
 .screen.active{display:flex}
@@ -77,9 +77,9 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 /* Bottom nav */
 .bottom-nav{background:var(--white);border-top:1px solid rgba(0,0,0,.07);display:flex;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px);height:var(--nav-h);z-index:10}
 .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:transparent;padding:8px 0}
-.nav-tab-icon{font-size:20px;line-height:1;transition:transform .15s}
-.nav-tab-label{font-size:9px;color:var(--ink-s);letter-spacing:.5px;font-family:var(--ft)}
-.nav-tab.active .nav-tab-label{color:var(--sage-d);font-weight:500}
+.nav-tab-icon{font-size:20px;line-height:1;transition:transform .15s;color:#000}
+.nav-tab-label{font-size:9px;color:#000;letter-spacing:.5px;font-family:var(--ft)}
+.nav-tab.active .nav-tab-label{color:#000;font-weight:500}
 .nav-tab.active .nav-tab-icon{transform:scale(1.1)}
 .nav-center{flex:1;display:flex;align-items:center;justify-content:center}
 .fab{width:52px;height:52px;border-radius:16px;background:var(--sage);color:#fff;border:none;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px rgba(154,170,148,.55);margin-bottom:6px;transition:transform .15s}
@@ -755,13 +755,13 @@ function renderHome(){
       <div class="ie-box exp"><div class="ie-lbl">本月支出</div><div class="ie-val">NT$${fmt(expense)}</div><div class="ie-hint">預算 ${pct}%</div></div>
       <div class="ie-box inc"><div class="ie-lbl">本月收入</div><div class="ie-val">NT$${fmt(income)}</div><div class="ie-hint">結餘 NT$${fmt(net)}</div></div>
     </div>
-    <div class="card">
-      <div class="card-row"><span class="card-title">帳戶資產</span><span class="see-all" onclick="openAcctEdit(null)">＋ 新增</span></div>
-      <div class="acct-scroll-wrap">${acctCards}<div class="acct-add" onclick="openAcctEdit(null)"><div class="acct-add-icon">＋</div><div class="acct-add-lbl">新增帳戶</div></div></div>
-    </div>
     <div class="stat-strip">
       <div class="stat-box"><div class="stat-lbl">支出日均</div><div class="stat-val">NT$${fmt(avg)}</div><div class="stat-hint">每日平均</div></div>
       <div class="stat-box"><div class="stat-lbl">最大支出</div><div class="stat-val" style="font-size:14px">${top?top[0]:'—'}</div><div class="stat-hint">${top?'NT$'+fmt(top[1]):'尚無資料'}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-row"><span class="card-title">帳戶資產</span><span class="see-all" onclick="openAcctEdit(null)">＋ 新增</span></div>
+      <div class="acct-scroll-wrap">${acctCards}<div class="acct-add" onclick="openAcctEdit(null)"><div class="acct-add-icon">＋</div><div class="acct-add-lbl">新增帳戶</div></div></div>
     </div>`;
 }
 
@@ -937,7 +937,7 @@ function renderChart(){
       <div class="chart-legend">${legend||'<div class="empty-state">尚無資料</div>'}</div>
     </div>
     <div class="card">
-      <div class="card-row"><span class="card-title">近12個月收支</span><span style="font-size:10px;color:var(--ink-s)">橘=支出 · 綠=收入</span></div>
+      <div class="card-row"><span class="card-title">近12個月收支</span></div>
       <div class="line-wrap" style="height:180px"><canvas id="lc"></canvas></div>
     </div>`:`<div class="card">
       <div class="card-row"><span class="card-title">存錢趨勢</span><span style="font-size:10px;color:var(--ink-s)">收入 − 支出</span></div>
