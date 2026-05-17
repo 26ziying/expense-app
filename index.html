@@ -696,11 +696,26 @@ function stats(){
   return{income,expense,net:income-expense,bycat,byIncCat};
 }
 
+function shrinkOtherPageFonts(screenId){
+  const root=document.getElementById('sc-'+screenId);
+  if(!root)return;
+  root.querySelectorAll('*').forEach(el=>{
+    const fs=window.getComputedStyle(el).fontSize;
+    if(fs&&fs.endsWith('px')){
+      const size=parseFloat(fs);
+      if(size>2){
+        el.style.fontSize=`${Math.max(size-2,1)}px`;
+      }
+    }
+  });
+}
+
 function render(s){
   if(s==='home')renderHome();
   else if(s==='records')renderRecords();
   else if(s==='chart')renderChart();
   else if(s==='budget')renderBudget();
+  if(s!=='home')shrinkOtherPageFonts(s);
 }
 
 /* ── HOME ── */
