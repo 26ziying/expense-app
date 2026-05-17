@@ -75,7 +75,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 
 
 /* Bottom nav */
-.bottom-nav{background:var(--white);border-top:1px solid rgba(0,0,0,.07);display:flex;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px);height:var(--nav-h);z-index:10;transform:translateY(-0.2cm)}
+.bottom-nav{background:var(--white);border-top:1px solid rgba(0,0,0,.07);display:flex;flex-shrink:0;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px);height:calc(var(--nav-h) + 10px);z-index:10;transform:translateY(-0.2cm)}
 .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:transparent;padding:8px 0}
 .nav-tab-icon{font-size:20px;line-height:1;transition:transform .15s;color:#000}
 .nav-tab-label{font-size:12px;color:#000;letter-spacing:.5px;font-family:var(--ft);display:none}
@@ -698,8 +698,9 @@ function stats(){
 
 function shrinkOtherPageFonts(screenId){
   const root=document.getElementById('sc-'+screenId);
-  if(!root)return;
+  if(!root||root.dataset.fontsShrunk==='true')return;
   root.querySelectorAll('*').forEach(el=>{
+    if(el.closest('.month-slider'))return;
     const fs=window.getComputedStyle(el).fontSize;
     if(fs&&fs.endsWith('px')){
       const size=parseFloat(fs);
@@ -708,6 +709,7 @@ function shrinkOtherPageFonts(screenId){
       }
     }
   });
+  root.dataset.fontsShrunk='true';
 }
 
 function render(s){
