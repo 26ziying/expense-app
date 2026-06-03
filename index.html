@@ -191,12 +191,12 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 .bud-row{padding:11px 0;border-bottom:1px solid rgba(0,0,0,.05)}
 .bud-row:last-child{border-bottom:none}
 .bud-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.bud-emoji{font-size:19px;width:22px;text-align:center;flex-shrink:0}
-.bud-name{font-size:17px;color:var(--ink);flex:1;font-family:var(--ft)}
+.bud-emoji{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+.bud-name{font-size:15px;color:var(--ink);flex:1;font-family:var(--ft)}
 .bud-amounts{display:flex;align-items:baseline;gap:2px;font-family:var(--ft)}
-.bud-spent{font-size:17px}
-.bud-sep{font-size:15px;color:var(--ink-s);margin:0 1px}
-.bud-target{width:60px;border:none;background:transparent;font-size:17px;color:var(--ink-s);outline:none;font-family:var(--ft);text-align:right;border-bottom:1px dashed rgba(0,0,0,.18)}
+.bud-spent{font-size:15px}
+.bud-sep{font-size:13px;color:var(--ink-s);margin:0 1px}
+.bud-target{width:60px;border:none;background:transparent;font-size:15px;color:var(--ink-s);outline:none;font-family:var(--ft);text-align:right;border-bottom:1px dashed rgba(0,0,0,.18)}
 .bud-bar-wrap{height:6px;background:var(--bg);border-radius:4px;overflow:hidden;margin-bottom:4px}
 .bud-bar{height:100%;border-radius:4px;transition:width .5s}
 .bud-footer{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-s)}
@@ -776,8 +776,8 @@ function stats(){
 function loadWealthGoal(){wealthGoal=JSON.parse(localStorage.getItem('mb7_wealth_goal')||'{"target":0,"deadline":"","note":""}');}
 function openWealthSheet(){loadWealthGoal();document.getElementById('w-target').value=wealthGoal.target||'';document.getElementById('w-deadline').value=wealthGoal.deadline||'';document.getElementById('w-note').value=wealthGoal.note||'';document.getElementById('w-clear-btn').style.display=wealthGoal.target?'inline-flex':'none';document.getElementById('wealth-overlay').classList.add('open');}
 function closeWealthSheet(){document.getElementById('wealth-overlay').classList.remove('open');}
-function saveWealthGoal(){const target=parseFloat(document.getElementById('w-target').value)||0;wealthGoal={target,deadline:document.getElementById('w-deadline').value,note:document.getElementById('w-note').value.trim()||''};localStorage.setItem('mb7_wealth_goal',JSON.stringify(wealthGoal));showToast(target?'財富目標已儲存':'已清除財富目標');closeWealthSheet();renderHome();}
-function deleteWealthGoal(){wealthGoal={target:0,deadline:'',note:''};localStorage.setItem('mb7_wealth_goal',JSON.stringify(wealthGoal));closeWealthSheet();renderHome();showToast('已清除財富目標');}
+function saveWealthGoal(){const target=parseFloat(document.getElementById('w-target').value)||0;wealthGoal={target,deadline:document.getElementById('w-deadline').value,note:document.getElementById('w-note').value.trim()||''};localStorage.setItem('mb7_wealth_goal',JSON.stringify(wealthGoal));showToast(target?'財富目標已儲存':'已清除財富目標');closeWealthSheet();render(curScr==='wealth'?'wealth':'home');}
+function deleteWealthGoal(){wealthGoal={target:0,deadline:'',note:''};localStorage.setItem('mb7_wealth_goal',JSON.stringify(wealthGoal));closeWealthSheet();render(curScr==='wealth'?'wealth':'home');showToast('已清除財富目標');}
 
 function openBudgetSheet(){
   renderBudget();
@@ -861,25 +861,6 @@ function renderHome(){
     return `<div class="bud-row"><div class="bud-top"><div class="bud-emoji"><i class="fas ${cii.e}"></i></div><div class="bud-name">${name}</div><div class="bud-amounts"><span class="bud-spent" style="color:${over?'#c4a090':'var(--ink)'}">${fmt(spent)}</span><span class="bud-sep">/</span><input type="number" class="bud-target" value="${catBud||''}" placeholder="預算" onchange="setCatBud('${name}',this.value)" inputmode="numeric"></div></div><div class="bud-bar-wrap"><div class="bud-bar" style="width:${p}%;background:${over?'#c4a090':cii.c}"></div></div><div class="bud-footer"><span>${catBud>0?p+'% 已用':'點右側設定'}</span><span style="color:${over?'#c4a090':'var(--ink-s)'}">${catBud>0?(over?'超支 NT$'+fmt(spent-catBud):'剩 NT$'+fmt(catBud-spent)):'未設定'}</span></div></div>`;
   }).join('');
 
-  // 帳戶卡片（動態餘額）
-  const acctCards=accounts.map(a=>{
-    const bal=calcAcctBalance(a);
-    const mInc=exps.filter(e=>isInc(e)&&matchesAccount(a,e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
-    const mExp=exps.filter(e=>!isInc(e)&&matchesAccount(a,e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
-    const mNet=mInc-mExp;
-    const iconHtml=a.icon&&a.icon.startsWith('fa-')?`<i class="fas ${a.icon}"></i>`:a.icon||'🏦';
-    return`<div class="acct-card" style="background:${a.color||'#9aaa94'}" onclick="openAcctDetail('${a.id}')">
-      <div class="acct-icon">${iconHtml}</div>
-      <div class="acct-name">${a.name}</div>
-      <div class="acct-bal"><span class="acct-bal-cur">NT$</span>${fmt(bal)}</div>
-      <div class="acct-sub">${TYPE_LABEL[a.type]||'帳戶'}</div>
-      <div class="acct-month-net" style="color:rgba(255,255,255,${mNet===0?0.5:0.85})">
-        本月 ${mNet>=0?'＋':'－'}NT$${fmt(Math.abs(mNet))}
-      </div>
-    </div>`;
-  }).join('');
-
-
   document.getElementById('home-scroll').innerHTML=`
     <div class="hero">
       <div class="hero-lbl">本月結餘</div>
@@ -904,14 +885,7 @@ function renderHome(){
       </div>
       <div class="card-row" style="margin-top:16px;cursor:pointer;justify-content:flex-end" onclick="openBudgetSheet()"><span class="see-all">設定預算</span></div>
     </div>
-    <div class="card">
-      <div class="card-row"><span class="card-title">財富管理</span><span class="see-all" onclick="goScreen('wealth')">前往財富頁</span></div>
-      <div style="padding:14px 0 0;color:var(--ink-s);font-size:13px;line-height:1.6">財富管理已獨立成頁面，前往查看目標設定與資產配置。</div>
-    </div>
-    <div class="card">
-      <div class="card-row"><span class="card-title">帳戶資產</span><span class="see-all" onclick="openAcctEdit(null)">＋ 新增</span></div>
-      <div class="acct-scroll-wrap">${acctCards}<div class="acct-add" onclick="openAcctEdit(null)"><div class="acct-add-icon">＋</div><div class="acct-add-lbl">新增帳戶</div></div></div>
-    </div>`;
+`;
 }
 
 function renderWealth(){
@@ -922,17 +896,26 @@ function renderWealth(){
   const goal=wealthGoal.target||0;
   const goalPct=goal>0?Math.min(100,Math.round(netWorth/goal*100)):0;
   const remainingText=goal>netWorth?`再存 NT$${fmt(goal-netWorth)}`:'已達標';
-  const accountRows=accounts.map(a=>{
-    const bal=calcAcctBalance(a);
-    const title=`${TYPE_LABEL[a.type]||'帳戶'} · ${a.name}`;
-    const iconHtml = a.icon && a.icon.startsWith('fa-') ? `<i class="fas ${a.icon}"></i>` : (a.icon || '🏦');
-    return `<div class="bank-item" onclick="openAcctDetail('${a.id}')">
+  const groupedAccounts=accounts.reduce((map,a)=>{
+    const src=(a.linked_source||a.name||'其他').split('|')[0]||'其他';
+    if(!map[src])map[src]=[];
+    map[src].push(a);
+    return map;
+  },{});
+  const accountRows=Object.entries(groupedAccounts).map(([src, group])=>{
+    const items=group.map(a=>{
+      const bal=calcAcctBalance(a);
+      const title=`${TYPE_LABEL[a.type]||'帳戶'} · ${a.name}`;
+      const iconHtml = a.icon && a.icon.startsWith('fa-') ? `<i class="fas ${a.icon}"></i>` : (a.icon || '🏦');
+      return `<div class="bank-item" onclick="openAcctDetail('${a.id}')">
       <div style="display:flex;align-items:center;gap:10px">
         <div class="bank-icon" style="background:${a.color||'#9aaa94'}">${iconHtml}</div>
         <div><div class="bank-name">${title}</div><div class="bank-count">${a.note||'帳戶詳情'}</div></div>
       </div>
       <div class="bank-amount${bal>=0?' inc':''}">NT$${fmt(bal)}</div>
     </div>`;
+    }).join('');
+    return `<div class="card" style="margin-top:12px"><div class="card-row"><span class="card-title">${src}</span><span style="font-size:12px;color:var(--ink-s)">${group.length} 個帳戶</span></div>${items}</div>`;
   }).join('')||'<div class="empty-state">尚未新增帳戶</div>';
   document.getElementById('wealth-scroll').innerHTML=`
     <div class="card">
