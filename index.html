@@ -151,6 +151,14 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 .rec-amount.inc{color:var(--income-d)}
 .rec-sign{font-size:15px;margin-right:1px}
 .cat-chip{display:inline-block;padding:2px 7px;border-radius:5px;font-size:13px}
+
+#acct-detail-body .rec-item{gap:8px;padding:8px 0}
+#acct-detail-body .rec-icon{width:34px;height:34px;font-size:18px}
+#acct-detail-body .rec-store{font-size:15px}
+#acct-detail-body .rec-meta{font-size:12px;gap:3px}
+#acct-detail-body .rec-amount{font-size:16px}
+#acct-detail-body .rec-sign{font-size:14px}
+#acct-detail-body .cat-chip{font-size:12px;padding:2px 6px}
 .type-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:12px;font-family:var(--ft)}
 .type-badge.exp{background:var(--blush-p);color:var(--blush)}
 .type-badge.inc{background:var(--income-p);color:var(--income-d)}
@@ -243,7 +251,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
 .f-save:disabled{opacity:.5}
 .f-error{font-size:12px;color:#d9534f;margin-top:4px;min-height:18px;visibility:hidden;opacity:0;transition:opacity .2s}
 .f-error.active{visibility:visible;opacity:1}
-.f-input.invalid{border:1px solid #d9534f;box-shadow:0 0 0 4px rgba(217,83,79,.12)}
+.f-input.invalid,.f-select.invalid{border:1px solid #d9534f;box-shadow:0 0 0 4px rgba(217,83,79,.12)}
 
 /* Detail */
 .detail-header{text-align:center;padding:12px 0 18px}
@@ -459,7 +467,6 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
             <option value="玉山">玉山</option>
             <option value="富邦">富邦</option>
             <option value="全聯禮卷">全聯禮卷</option>
-            <option value="中信午餐">中信午餐</option>
             <option value="LINE Pay">LINE Pay</option>
             <option value="街口支付">街口支付</option>
             <option value="悠遊付">悠遊付</option>
@@ -542,6 +549,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
             <option value="investment">📈 投資帳戶</option>
             <option value="other">其他</option>
           </select>
+          <div class="f-error" id="acct-type-error"></div>
         </div>
       </div>
       <div class="f-group">
@@ -567,6 +575,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100%;max
         <label class="f-label">備註</label>
         <input class="f-input" id="acct-note" type="text" placeholder="選填">
       </div>
+      <div class="f-error" id="acct-save-error"></div>
     </div>
     <div class="f-actions">
       <button type="button" class="f-cancel" onclick="closeAcctEdit()">取消</button>
@@ -697,6 +706,13 @@ let budgetNewCatOpen=false;
 const fmt=n=>Math.round(n).toLocaleString();
 const fdate=s=>s?s.slice(0,10):'';
 const isInc=e=>(e.type||'expense')==='income';
+const txnLabel=e=>{
+  const inc=isInc(e);
+  const sign=inc?'+':'-';
+  const points=parseInt(e.points||0,10)||0;
+  if(points>0) return `${sign} ${fmt(points)}點`;
+  return `${sign} NT$${fmt(e.amount||0)}`;
+};
 const catInfo=e=>{const t=e.type||'expense',c=e.category||'其他';return(t==='income'?INC_CATS[c]:EXP_CATS[c])||(t==='income'?INC_CATS['其他收入']:EXP_CATS['其他'])};
 function getBudgetCatKeys(){if(!budgets.list||!Array.isArray(budgets.list)||!budgets.list.length)budgets.list=Object.keys(EXP_CATS);return budgets.list;}
 function saveBudgets(){localStorage.setItem('mb7_bud',JSON.stringify(budgets));}
@@ -992,8 +1008,7 @@ function swipeHTML(e){
           </div>
         </div>
         <div class="rec-right">
-          <div class="rec-amount ${inc?'inc':'exp'}"><span class="rec-sign">${inc?'＋':'－'}</span>NT$${fmt(e.amount)}</div>
-          ${(e.points||0)>0? '<div style="font-size:10px;color:var(--ink-s)">點 ' + e.points + '</div>' : ''}
+          <div class="rec-amount ${inc?'inc':'exp'}">${txnLabel(e)}</div>
         </div>
       </div>
     </div>
@@ -1016,7 +1031,11 @@ function swipeEnd(ev,id){
 }
 
 function renderRecords(typeOverride,catOverride,bankFilter){
-  if(typeOverride!==null&&typeOverride!==undefined){recType=typeOverride;recLevel=typeOverride==='all'?0:1;recCat=null;}
+  if(typeOverride!==null&&typeOverride!==undefined){
+    recType=typeOverride;
+    recCat=null;
+    recLevel=typeOverride==='all'?0:1;
+  }
   if(catOverride!==null&&catOverride!==undefined){recCat=catOverride;recLevel=2;}
   const el=document.getElementById('rec-scroll');
 
@@ -1042,15 +1061,19 @@ function renderRecords(typeOverride,catOverride,bankFilter){
   if(recLevel===0){
     const eT=exps.filter(e=>!isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
     const iT=exps.filter(e=>isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    const visible=recType==='all'?exps:exps.filter(e=>recType==='expense'? !isInc(e) : isInc(e));
+    const allClass=recType==='all'?' on-all':'';
+    const expClass=recType==='expense'?' on-exp':'';
+    const incClass=recType==='income'?' on-inc':'';
     el.innerHTML=`
       <div class="filter-tabs">
-        <div class="ftab on-all" onclick="renderRecords('all')">全部<div style="font-size:10px;margin-top:2px;opacity:.7">${exps.length} 筆</div></div>
-        <div class="ftab" onclick="renderRecords('expense')">支出<div style="font-size:10px;margin-top:2px;opacity:.7">NT$${fmt(eT)}</div></div>
-        <div class="ftab" onclick="renderRecords('income')">收入<div style="font-size:10px;margin-top:2px;opacity:.7">NT$${fmt(iT)}</div></div>
+        <div class="ftab${allClass}" onclick="renderRecords('all')">全部<div style="font-size:10px;margin-top:2px;opacity:.7">${exps.length} 筆</div></div>
+        <div class="ftab${expClass}" onclick="renderRecords('expense')">支出<div style="font-size:10px;margin-top:2px;opacity:.7">NT$${fmt(eT)}</div></div>
+        <div class="ftab${incClass}" onclick="renderRecords('income')">收入<div style="font-size:10px;margin-top:2px;opacity:.7">NT$${fmt(iT)}</div></div>
       </div>
       <div class="card" style="margin-bottom:0">
-        ${exps.slice(0,8).map(swipeHTML).join('')||'<div class="empty-state">這個月沒有記錄 ✦</div>'}
-        ${exps.length>8? '<div style="text-align:center;padding:10px 0 0;font-size:12px;color:var(--sage-d);cursor:pointer;font-family:var(--ft)" onclick="recLevel=2;recType=\'all\';recCat=null;renderRecords()">查看全部 ' + exps.length + ' 筆 →</div>' : ''}
+        ${visible.slice(0,8).map(swipeHTML).join('')||'<div class="empty-state">這個月沒有記錄 ✦</div>'}
+        ${visible.length>8? '<div style="text-align:center;padding:10px 0 0;font-size:12px;color:var(--sage-d);cursor:pointer;font-family:var(--ft)" onclick="recLevel=2;recType=\'all\';recCat=null;renderRecords()">查看全部 ' + visible.length + ' 筆 →</div>' : ''}
       </div>`;
     return;
   }
@@ -1070,12 +1093,16 @@ function renderRecords(typeOverride,catOverride,bankFilter){
       </div>`;
     }).join('')||'<div class="empty-state">尚無記錄 ✦</div>';
     const lbl=recType==='expense'?'支出':recType==='income'?'收入':'全部';
+    const eT=exps.filter(e=>!isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    const iT=exps.filter(e=>isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    const allClass=recType==='all'?' on-all':'';
+    const expClass=recType==='expense'?' on-exp':'';
+    const incClass=recType==='income'?' on-inc':'';
     el.innerHTML=`
-      <div class="back-row" onclick="renderRecords('all',null)"><span>‹</span> 返回</div>
       <div class="filter-tabs">
-        <div class="ftab${recType==='all'?' on-all':''}" onclick="renderRecords('all')">全部</div>
-        <div class="ftab${recType==='expense'?' on-exp':''}" onclick="renderRecords('expense')">支出</div>
-        <div class="ftab${recType==='income'?' on-inc':''}" onclick="renderRecords('income')">收入</div>
+        <div class="ftab${allClass}" onclick="renderRecords('all')">全部<div style="font-size:10px;margin-top:2px;opacity:.7">${exps.length} 筆</div></div>
+        <div class="ftab${expClass}" onclick="renderRecords('expense')">支出<div style="font-size:10px;margin-top:2px;opacity:.7">NT$${fmt(eT)}</div></div>
+        <div class="ftab${incClass}" onclick="renderRecords('income')">收入<div style="font-size:10px;margin-top:2px;opacity:.7">NT$${fmt(iT)}</div></div>
       </div>
       <div class="card" style="margin-bottom:0"><div class="card-row"><span class="card-title">${lbl} — 分類</span></div>${catRows}</div>`;
     return;
@@ -1084,8 +1111,18 @@ function renderRecords(typeOverride,catOverride,bankFilter){
   if(recLevel===2){
     const filtered=exps.filter(e=>{const tOk=recType==='all'||(e.type||'expense')===recType;const cOk=!recCat||(e.category||'其他')===recCat;return tOk&&cOk;});
     const cii=recCat?catInfo({type:recType==='income'?'income':'expense',category:recCat}):null;
+    const eT=exps.filter(e=>!isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    const iT=exps.filter(e=>isInc(e)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    const allClass=recType==='all'?' on-all':'';
+    const expClass=recType==='expense'?' on-exp':'';
+    const incClass=recType==='income'?' on-inc':'';
     el.innerHTML=`
       <div class="back-row" onclick="recLevel=1;renderRecords()"><span>‹</span> 返回分類</div>
+      <div class="filter-tabs">
+        <div class="ftab${allClass}" onclick="renderRecords('all')">全部<div style="font-size:10px;margin-top:2px;opacity:.7">${exps.length} 筆</div></div>
+        <div class="ftab${expClass}" onclick="renderRecords('expense')">支出<div style="font-size:10px;margin-top:2px;opacity:.7">NT$${fmt(eT)}</div></div>
+        <div class="ftab${incClass}" onclick="renderRecords('income')">收入<div style="font-size:10px;margin-top:2px;opacity:.7">NT$${fmt(iT)}</div></div>
+      </div>
       <div class="card" style="margin-bottom:0">
         <div class="card-row"><span class="card-title">${cii?cii.e+' ':''} ${recCat||'全部'}</span><span style="font-size:11px;color:var(--ink-s)">${filtered.length} 筆</span></div>
         ${filtered.map(swipeHTML).join('')||'<div class="empty-state">沒有符合的記錄 ✦</div>'}
@@ -1263,7 +1300,7 @@ function openDetail(id){
   document.getElementById('detail-body').innerHTML=`
     <div class="detail-header">
       <div class="detail-icon" style="background:${cii.bg}"><i class="fas ${cii.e}"></i></div>
-      <div class="detail-amount" style="color:${inc?'var(--income-d)':'var(--ink)'}">${inc?'＋':'－'} NT$ ${fmt(e.amount)}</div>
+      <div class="detail-amount" style="color:${inc?'var(--income-d)':'var(--ink)'}">${txnLabel(e)}</div>
     </div>
     <div class="detail-field"><span class="df-label">類型</span><span class="df-val"><span class="type-badge ${inc?'inc':'exp'}">${inc?'收入':'支出'}</span></span></div>
     <div class="detail-field"><span class="df-label">店家</span><span class="df-val">${e.store&&e.store!=='未知'?e.store:'—'}</span></div>
@@ -1311,6 +1348,29 @@ function clearAcctNameError(){
   if(err){err.textContent='';err.classList.remove('active');}
   if(input){input.classList.remove('invalid');}
 }
+function clearAcctSaveError(){
+  const err=document.getElementById('acct-save-error');
+  if(err){err.textContent='';err.classList.remove('active');}
+}
+function clearAcctTypeError(){
+  const err=document.getElementById('acct-type-error');
+  const sel=document.getElementById('acct-type');
+  if(err){err.textContent='';err.classList.remove('active');}
+  if(sel){sel.classList.remove('invalid');}
+}
+function friendlyApiError(bodyText){
+  try{
+    const body=JSON.parse(bodyText);
+    if(body.message){
+      if(body.message.includes('accounts_type_check')) return '儲存失敗：帳戶類型不正確，請重新選擇帳戶類型。';
+      if(body.message.includes('violates check constraint')) return '儲存失敗：資料格式不正確，請確認輸入內容。';
+      return body.message;
+    }
+  }catch(e){
+    // not JSON
+  }
+  return bodyText || '儲存失敗，請稍後再試。';
+}
 
 function openAcctEdit(id){
   const a=id?accounts.find(x=>x.id===id):null;
@@ -1318,6 +1378,7 @@ function openAcctEdit(id){
   document.getElementById('acct-edit-id').value=a?a.id:'';
   document.getElementById('acct-name').value=a?a.name:'';
   clearAcctNameError();
+  clearAcctSaveError();
   document.getElementById('acct-icon').value=a?a.icon:'🏦';
   document.getElementById('acct-type').value=a?a.type:'bank';
   if(a && a.linked_source && a.linked_source.includes('|')){
@@ -1337,8 +1398,11 @@ function closeAcctEdit(){document.getElementById('acct-edit-overlay').classList.
 
 async function saveAccount(){
   const nameInput=document.getElementById('acct-name');
+  const typeSelect=document.getElementById('acct-type');
   const name=nameInput.value.trim();
   clearAcctNameError();
+  clearAcctTypeError();
+  clearAcctSaveError();
   if(!name){
     const err=document.getElementById('acct-name-error');
     if(err){err.textContent='請輸入帳戶名稱';err.classList.add('active');}
@@ -1370,10 +1434,28 @@ async function saveAccount(){
     if(!r.ok){
       let errorMessage='';
       try{errorMessage=await r.text();}catch(e){errorMessage=r.statusText;}
-      throw new Error(`HTTP ${r.status}${errorMessage?(' '+errorMessage):''}`);
+      const friendly=friendlyApiError(errorMessage);
+      const msg=`儲存失敗：${friendly}`;
+      if(friendly.includes('帳戶類型')){
+        const typeErr=document.getElementById('acct-type-error');
+        if(typeErr){typeErr.textContent=friendly;typeErr.classList.add('active');}
+        if(typeSelect){typeSelect.classList.add('invalid');}
+      } else {
+        const errEl=document.getElementById('acct-save-error');
+        if(errEl){errEl.textContent=msg;errEl.classList.add('active');}
+      }
+      showToast(msg);
+      btn.disabled=false;
+      btn.textContent=originalTxt;
+      return;
     }
     closeAcctEdit();showToast(eid?'已更新 ✓':'帳戶已新增 ✓');await loadData();
-  }catch(err){showToast('儲存失敗: '+err.message)}
+  }catch(err){
+    const msg='儲存失敗: '+err.message;
+    const errEl=document.getElementById('acct-save-error');
+    if(errEl){errEl.textContent=msg;errEl.classList.add('active');}
+    showToast(msg);
+  }
   finally{btn.disabled=false;btn.textContent=originalTxt;}
 }
 
@@ -1409,7 +1491,7 @@ function openAcctDetail(id){
             </div>
           </div>
           <div class="rec-right">
-            <div class="rec-amount ${inc?'inc':'exp'}"><span class="rec-sign">${inc?'＋':'－'}</span>NT$${fmt(e.amount)}</div>
+            <div class="rec-amount ${inc?'inc':'exp'}">${txnLabel(e)}</div>
           </div>
         </div>
       </div>
@@ -1470,7 +1552,7 @@ function openAcctDetail(id){
       </div>
     </div>
     ${statementHTML}
-    <div style="font-size:10px;color:var(--ink-s);letter-spacing:2px;font-family:var(--ft);margin-bottom:8px">本月所有交易</div>
+    <div style="font-size:9px;color:var(--ink-s);letter-spacing:1px;font-family:var(--ft);margin-bottom:8px">本月所有交易</div>
     <div style="background:var(--white);border-radius:var(--r);border:1px solid rgba(0,0,0,.04);overflow:hidden">
       ${txns.length?txns.map(txnSwipeHTML).join(''):'<div class="empty-state">本月無相關交易</div>'}
     </div>`;
